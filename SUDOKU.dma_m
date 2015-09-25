@@ -1,0 +1,195 @@
+$SET TADS                                                               10000000          
+ BEGIN                                                                  10001000          
+ DEFINE                                                                 10002000          
+   CAND(X, Y) = IF(X)THEN(Y)ELSE FALSE #                                10003000          
+  ,vCrLf = 48"0D25" #                                                   10003200          
+  ,K = 1024 #                                                           10003400          
+  ;                                                                     10004000          
+ INTEGER ARRAY                                                          10005000          
+   dato  [1:9,1:9]                                                      10006000          
+  ,result[1:9,1:9]                                                      10007000          
+  ;                                                                     10008000          
+ INTEGER                                                                10009000          
+   i                                                                    10010000          
+  ,j                                                                    10011000          
+  ;                                                                     10012000          
+                                                                        10012020          
+ PROCEDURE genHtml;                                                     10012040          
+   BEGIN                                                                10012060          
+   %Genera una pagina web con la solucion                               10012080          
+                                                                        10012100          
+   EBCDIC ARRAY                                                         10012120          
+     lSalida [0:5*K]                                                    10012140          
+    ;                                                                   10012160          
+   FILE                                                                 10012180          
+     webPage                                                            10012200          
+       (KIND=DISK                                                       10012220          
+       ,MAXRECSIZE=1                                                    10012240          
+       ,FRAMESIZE=8                                                     10012260          
+       ,ANYSIZEIO                                                       10012280          
+       )                                                                10012300          
+    ;                                                                   10012320          
+   POINTER                                                              10012340          
+     p                                                                  10012360          
+    ;                                                                   10012380          
+                                                                        10012400          
+   REPLACE p:lSalida BY "<html><body>",vCrLf;                           10012420          
+   WRITE(webPage, OFFSET(p),lSalida);                                   10012440          
+                                                                        10012460          
+                                                                        10012480          
+                                                                        10012500          
+   REPLACE p:lSalida BY "</body></html>",vCrLf;                         10012520          
+   WRITE(webPage, OFFSET(p),lSalida);                                   10012540          
+   CLOSE(webPage, LOCK)                                                 10012560          
+   END;                                                                 10012580          
+                                                                        10012600          
+ INTERRUPT despliega;                                                   10013000          
+   BEGIN                                                                10014000          
+   INTEGER i, j;                                                        10015000          
+   POINTER p;                                                           10016000          
+   EBCDIC ARRAY linea [0:125];                                          10017000          
+                                                                        10018000          
+   REPLACE p:linea                                                      10019000          
+       BY "+","-"FOR 5,"+","-"FOR 5,"+","-"FOR 5,"+"48"00";             10020000          
+   DISPLAY(linea);                                                      10021000          
+   p := linea;                                                          10022000          
+   i := 10;                                                             10023000          
+   THRU 3 DO                                                            10024000          
+     BEGIN                                                              10025000          
+     THRU 3 DO                                                          10026000          
+       BEGIN                                                            10027000          
+       i :=*-1;                                                         10028000          
+       j := 0;                                                          10029000          
+       p := linea;                                                      10030000          
+       THRU 3 DO                                                        10031000          
+         BEGIN                                                          10032000          
+         REPLACE p:p BY "|";                                            10033000          
+         THRU 2 DO                                                      10034000          
+           REPLACE p:p BY result[i,j:=*+1] FOR 1 DIGITS," ";            10035000          
+         REPLACE p:p BY result[i,j:=*+1] FOR 1 DIGITS;                  10036000          
+         END;                                                           10037000          
+       REPLACE p:p BY "|"48"00";                                        10038000          
+       DISPLAY(linea);                                                  10039000          
+       END;                                                             10040000          
+     REPLACE p:linea                                                    10041000          
+          BY "+","-"FOR 5,"+","-"FOR 5,"+","-"FOR 5,"+"48"00";          10042000          
+     DISPLAY(linea);                                                    10043000          
+     END;                                                               10044000          
+   END;                                                                 10045000          
+                                                                        10046000          
+ BOOLEAN PROCEDURE getSudoku(fil, col);                                 10047000          
+   VALUE                     fil, col;                                  10048000          
+   INTEGER                   fil, col;                                  10049000          
+   BEGIN                                                                10050000          
+   BOOLEAN                                                              10051000          
+     valido                                                             10052000          
+    ;                                                                   10053000          
+   DEFINE                                                               10054000          
+     RETURN(val) =                                                      10055000          
+       BEGIN                                                            10056000          
+       getSudoku := val;                                                10057000          
+       IF NOT valido THEN                                               10058000          
+         result [fil, col] := dato[fil, col];                           10059000          
+       GO TO exit;                                                      10060000          
+       END #                                                            10061000          
+    ;                                                                   10062000          
+   INTEGER                                                              10063000          
+     target %nuestro resultado para esta celda                          10064000          
+    ,colb                                                               10065000          
+    ,filb                                                               10066000          
+    ,i                                                                  10067000          
+    ,j                                                                  10068000          
+    ;                                                                   10069000          
+   LABEL                                                                10070000          
+     exit                                                               10071000          
+    ;                                                                   10072000          
+                                                                        10073000          
+   WHILE NOT valido DO                                                  10074000          
+     BEGIN                                                              10075000          
+     IF dato[fil, col] > 0 THEN  %Esta celda viene dada                 10076000          
+       BEGIN                                                            10077000          
+       target := dato [fil, col];                                       10078000          
+       valido := TRUE;                                                  10079000          
+       END                                                              10080000          
+     ELSE % sino buscamos un valor                                      10081000          
+       BEGIN                                                            10082000          
+       valido := FALSE;                                                 10083000          
+       WHILE CAND(NOT valido, target:=*+1 < 10) DO                      10084000          
+         BEGIN                                                          10085000          
+         j := 0;                                                        10086000          
+         valido := TRUE;                                                10087000          
+         WHILE CAND(valido, j:=*+1 < 10) DO                             10088000          
+           IF result[fil, j] = target THEN %ya esta en la fila, no sirve10089000          
+             valido := FALSE;                                           10090000          
+         j := 0;                                                        10091000          
+         WHILE CAND(valido, j:=*+1 < 10) DO                             10092000          
+           IF result[j, col] = target THEN %ya esta en la col, no s     10093000          
+             valido := FALSE;                                           10094000          
+         IF valido THEN %ahora vemos el vecindario                      10095000          
+           BEGIN                                                        10096000          
+           i := filb := ((fil-1) DIV 3)*3;                              10097000          
+           WHILE CAND(valido, i :=*+1 <= filb + 3) DO                   10098000          
+             BEGIN                                                      10099000          
+             j := colb := ((col-1) DIV 3)*3;                            10100000          
+             WHILE CAND(valido, j :=*+1 <= colb + 3) DO                 10101000          
+               BEGIN                                                    10102000          
+               IF result[i, j] = target THEN                            10103000          
+                 valido := FALSE;                                       10104000          
+               END;                                                     10105000          
+             END;                                                       10106000          
+           END;                                                         10107000          
+         END of WHILE;                                                  10108000          
+       IF NOT valido THEN % no logramos nuestro valor                   10109000          
+         RETURN (TRUE); %retornamos excepcion                           10110000          
+       END of no viene dado;                                            10111000          
+     %encontramos un dato llamamos x siguiente celda                    10112000          
+     result [fil, col] := target;                                       10113000          
+     IF (col + 1) > 9 THEN                                              10114000          
+       IF (fil + 1) > 9 THEN                                            10115000          
+         RETURN (FALSE) % se completo y ganamos                         10116000          
+       ELSE                                                             10117000          
+         valido := NOT getSudoku (fil+1, 1)                             10118000          
+     ELSE                                                               10119000          
+       valido := NOT getSudoku (fil, col+1);                            10120000          
+     IF dato[fil, col] > 0 THEN                                         10120200          
+       RETURN(NOT valido);                                              10120400          
+     END;                                                               10121000          
+   RETURN(NOT valido); %retorna TRUE cuando algo falla                  10122000          
+ exit:                                                                  10123000          
+   END OF getSudoku;                                                    10124000          
+                                                                        10124500          
+ %-------------------- O U T E R    B L O C K --------------------------10125000          
+                                                                        10125500          
+ ATTACH despliega TO MYSELF.EXCEPTIONEVENT; %para desplegar a pedido    10126000          
+ %Datos para un juego dado                                              10126500          
+ dato [1,1] := 1;                                                       10127000          
+ dato [2,2] := 2;                                                       10127100          
+ dato [3,3] := 3;                                                       10127200          
+ dato [4,4] := 4;                                                       10127300          
+ dato [5,5] := 5;                                                       10127500          
+ dato [6,6] := 6;                                                       10127600          
+ dato [7,7] := 7;                                                       10127700          
+ dato [8,8] := 8;                                                       10127800          
+ dato [9,9] := 9;                                                       10128000          
+                                                                        10128500          
+ %Se carga matriz con los datos dados                                   10129000          
+ i := 0;                                                                10130000          
+ THRU 9 DO                                                              10131000          
+   BEGIN                                                                10132000          
+   i :=*+1;                                                             10133000          
+   j := 0;                                                              10134000          
+   THRU 9 DO                                                            10135000          
+     result [i, j:=*+1] := dato[i,j];                                   10136000          
+   END;                                                                 10137000          
+                                                                        10137500          
+ %Se imprime patron de inicio                                           10137600          
+ CAUSE(MYSELF.EXCEPTIONEVENT);                                          10137700          
+                                                                        10137800          
+ %Se invoca procedimiento de solucion                                   10138000          
+ IF getSudoku(1, 1) THEN                                                10139000          
+   DISPLAY("No se pudo resolver");                                      10140000          
+ CAUSE(MYSELF.EXCEPTIONEVENT);                                          10141000          
+                                                                        10141200          
+ genHtml;                                                               10141400          
+                                                                        10141600          
+ END.                                                                   10142000          

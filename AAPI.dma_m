@@ -1,0 +1,1858 @@
+%COPYRIGHT* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *%00001000          
+%*                                                                    *%00002000          
+%T            TITLE:  CLEARPATH HMP MARK 5.0 SYSTEM RELEASE           *%00003000          
+%*                                                                    *%00004000          
+%F                    FILE ID: SYMBOL/APIDEMO                         *%00005000          
+%*                                                                    *%00006000          
+%*                    PROPRIETARY PROGRAM MATERIAL                    *%00007000          
+%*                                                                    *%00008000          
+%*      THIS  MATERIAL  IS  PROPRIETARY  TO  UNISYS  CORPORATION      *%00009000          
+%*      AND IS  NOT TO BE REPRODUCED, USED OR  DISCLOSED  EXCEPT      *%00010000          
+%*      IN ACCORDANCE  WITH  PROGRAM  LICENSE  OR  UPON  WRITTEN      *%00011000          
+%*      AUTHORIZATION   OF  THE  PATENT   DIVISION   OF   UNISYS      *%00012000          
+%*      CORPORATION, BLUE BELL, PENNSYLVANIA 19422, USA.              *%00013000          
+%*                                                                    *%00014000          
+%C               COPYRIGHT (C) 1999 UNISYS CORPORATION                *%00015000          
+%*                                                                    *%00016000          
+%** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *%00017000          
+%*                                                                    *%00018000          
+%*      THE WITHIN INFORMATION IS NOT INTENDED TO BE NOR  SHOULD      *%00019000          
+%*      SUCH   BE  CONSTRUED  AS   AN   AFFIRMATION   OF   FACT,      *%00020000          
+%*      REPRESENTATION  OR  WARRANTY  BY  UNISYS  CORPORATION OF      *%00021000          
+%*      ANY  TYPE,  KIND OR CHARACTER.  ANY PRODUCT AND  RELATED      *%00022000          
+%*      MATERIALS DISCLOSED HEREIN IS  ONLY  FURNISHED  PURSUANT      *%00023000          
+%*      AND  SUBJECT  TO  THE  TERMS  AND  CONDITIONS OF A  DULY      *%00024000          
+%*      EXECUTED LICENSE AGREEMENT.  THE ONLY WARRANTIES MADE BY      *%00025000          
+%*      UNISYS  WITH RESPECT TO THE  PRODUCTS DESCRIBED  IN THIS      *%00026000          
+%*      MATERIAL ARE SETFORTH IN THE ABOVE MENTIONED AGREEMENT.       *%00027000          
+%*                                                                    *%00028000          
+%*      THE CUSTOMER SHOULD EXERCISE CARE TO ASSURE THAT USE  OF      *%00029000          
+%*      THE SOFTWARE WILL BE IN FULL COMPLIANCE WITH LAWS, RULES      *%00030000          
+%*      AND REGULATIONS OF THE  JURISDICTIONS  WITH  RESPECT  TO      *%00031000          
+%*      WHICH IT IS USED.                                             *%00032000          
+%*                                                                    *%00033000          
+%COPYRIGHT* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *%00034000          
+                                                                        00035000          
+                                                                        00036000          
+$$VERSION 49.189.8002                                                   00037000          
+$$SHARING = PRIVATE                                                     00038000          
+$$RESET LIST                                                            00039000          
+$$  SET LINEINFO                                                        00040000          
+% $$RESET XREFFILES                                                     00041000          
+$$RESET STATISTICS                                                      00042000          
+%$$RESET VERIFY                                                         00043000          
+                                                                        00044000          
+%------------------------- Update History ------------------------------00045000          
+                                                                        00046000          
+ COMMENT                                                                00047000          
+  19990901   Added support for file upload:  Made scratch2 bigger,      00048000          
+             allowed "multipart/form-data" as valid for content type    00049000          
+             on posted data, added translate table to convert           00050000          
+             unreadable characters to `.                                00051000          
+                                                                        00052000          
+  19991027   Added /HANG function to have AAPI sit on an ACCEPT before  00053000          
+             returning a response.                                      00054000          
+                                                                        00055000          
+  19991103   Added support for sending variable amounts of data         00056000          
+             asyncronously with the /SENDASYNC function.                00057000          
+                                                                        00058000          
+  19991104   Changed linkage to Atlas to be BYINITIATOR.                00059000          
+                                                                        00060000          
+  20000203   Added example of isSecure method.                          00061000          
+                                                                        00062000          
+  20000313   Added example of getProviderInfo method.                   00063000          
+                                                                        00064000          
+  20000417   Added example of getRemotePort method.                     00065000          
+ END COMMENT;                                                           00066000          
+%----------------------- End Update History ----------------------------00067000          
+                                                                        00068000          
+%* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *00069000          
+%                       A A P I   D E M O                               00070000          
+%* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *00071000          
+COMMENT                                                                 00072000          
+                                                                        00073000          
+  This program is a sample Atlas Application Programming Interface      00074000          
+  (AAPI) program that demonstrates the capabilities of the AAPI.        00075000          
+  A Connection Library interface is used to communicate with Atlas.     00076000          
+                                                                        00077000          
+  This program can be run with the path /cgilib/apidemo/apienv.htm      00078000          
+  from the Administration site (:2488).                                 00079000          
+                                                                        00080000          
+  To modify this program for application use, the following changes     00081000          
+  are suggested:                                                        00082000          
+                                                                        00083000          
+     Application Name:  The name of the application as passed to        00084000          
+     Atlas is declared below in the array APIDEMO.  Modify this         00085000          
+     array to contain the application defined to Atlas.                 00086000          
+                                                                        00087000          
+     The defines <progId> and <html_head> should be changed.            00088000          
+                                                                        00089000          
+     Processing Requests:  The "processNewRequest" procedure is         00090000          
+     called whenever the request event is triggered by Atlas.  This     00091000          
+     procedure determines what the request is and calls the             00092000          
+     appropriate handler.  Modify this procedure for calling the        00093000          
+     procedures for the application.                                    00094000          
+                                                                        00095000          
+     Server Linkage:  This demo links to the Administration server      00096000          
+     ATLASADMIN.  For production use, the production server             00097000          
+     ATLASSUPPORT, or another server, should be used instead.           00098000          
+     Change the <httpApiType> library declaration to use a different    00099000          
+     server.  See also the note at the library declaration if this      00100000          
+     application is to run with more than one server.                   00101000          
+                                                                        00102000          
+     Fault Handling:  There is no fault handling in this demo.          00103000          
+     While Atlas will return a generic response to the user should      00104000          
+     this library fault, this application could detect the fault and    00105000          
+     return a more detailed error, take a program dump, etc.            00106000          
+                                                                        00107000          
+     Initiation Order:  If this application will be initiated before    00108000          
+     Atlas, see the comments at the end of the program about the use    00109000          
+     of the LINKLIBRARY statement.                                      00110000          
+                                                                        00111000          
+     Atlas Termination:  If this application should not terminate       00112000          
+     when Atlas does, either the connection library Change procedure    00113000          
+     "httpApiChange" should be modified, or the handling of the         00114000          
+     <LibEojEnv> event should be modified, to note that Atlas is        00115000          
+     gone and wait for Atlas to return.  See also Initiation Order.     00116000          
+                                                                        00117000          
+     Rejecting Bad Requests:  Rejecting improper requests is handled    00118000          
+     by the "rejectRequest" procedure, and the <ErrorMsg> array         00119000          
+     should be tailored for the application.                            00120000          
+                                                                        00121000          
+     Multi-Stack Processing:  This example does its processing on       00122000          
+     one stack, the library/program stack.  If concurrent processing    00123000          
+     of multiple requests is desired, multiple worker stacks that       00124000          
+     use this library may be needed.                                    00125000          
+                                                                        00126000          
+  No special compile options or codefile options are needed for this    00127000          
+  program to work.                                                      00128000          
+                                                                        00129000          
+  For more information on AAPI programming, see the Atlas Web Server    00130000          
+  Administration and Programming Guide.                                 00131000          
+                                                                        00132000          
+  ;  % end COMMENT                                                      00133000          
+                                                                        00134000          
+BEGIN  % APIDEMO                                                        00135000          
+                                                                        00136000          
+DEFINE                                                                  00137000          
+       C          = , #,                                                00138000          
+       CAND(a, b) = IF (a) THEN (b)  ELSE FALSE #,                      00139000          
+       COR (a, b) = IF (a) THEN TRUE ELSE (b)   #;                      00140000          
+                                                                        00141000          
+TRUTHSET aEndOfNode (47"00" or 7"/");                                   00142000          
+TRANSLATETABLE                                                          00143000          
+  A2E  (ASCII to EBCDIC),                                               00144000          
+  AL2U (ASCII to ASCII,                                                 00145000          
+        7"abcdefghijklmnopqrstuvwxyz" TO                                00146000          
+        7"ABCDEFGHIJKLMNOPQRSTUVWXYZ"),                                 00147000          
+  AU2L (ASCII to ASCII,                                                 00148000          
+        7"ABCDEFGHIJKLMNOPQRSTUVWXYZ" TO                                00149000          
+        7"abcdefghijklmnopqrstuvwxyz"),                                 00150000          
+  A2Areadable                                                           00151000          
+       (ASCII to ASCII,                                                 00152000          
+        47"000102030405060708090A0B0C0D0E0F" TO 7"`",                   00153000          
+        47"101112131415161718191A1B1C1D1E1F" TO 7"`",                   00154000          
+        47"808182838485868788898A8B8C8D8E8F" TO 7"`",                   00155000          
+        47"909192939495969798999A9B9C9D9E9F" TO 7"`",                   00156000          
+        47"0D"  TO  7"^",      % CR                                     00157000          
+        47"0A"  TO  7"~" ),    % LF                                     00158000          
+  E2A  (EBCDIC to ASCII);                                               00159000          
+                                                                        00160000          
+DEFINE                                                                  00161000          
+  stackCnt (stack)       = stack[0] #,                                  00162000          
+  stackPush(stack, val)  = stack[stackCnt(stack) := *+1] := val #,      00163000          
+  stackPop (stack, val)  =                                              00164000          
+     BEGIN                                                              00165000          
+       val := stack[stackCnt(stack)];                                   00166000          
+       stackCnt(stack) := *-1;                                          00167000          
+     END #;                                                             00168000          
+                                                                        00169000          
+DEFINE maxTrans  =    255 #, % maximum number of oustanding transactions00170000          
+       maxLenToSend = 512000 #;                                         00171000          
+ASCII ARRAY dataToSend [0:maxLenToSend];                                00172000          
+REAL  ARRAY lenToSend  [0:maxTrans];                                    00173000          
+REAL  ARRAY availTrans [0:maxTrans];                                    00174000          
+REAL  ARRAY offsets    [0:maxTrans];                                    00175000          
+                                                                        00176000          
+DEFINE                                                                  00177000          
+  getAvailTrans (transId) = stackPop  (availTrans, transId) #,          00178000          
+  putAvailTrans (transId) = stackPush (availTrans, transId) #;          00179000          
+                                                                        00180000          
+%----------------------------------------------------------------------%00181000          
+%                                                                      %00182000          
+%                    Compilation information                           %00183000          
+%                                                                      %00184000          
+%----------------------------------------------------------------------%00185000          
+                                                                        00186000          
+REAL compiledVersion;                                                   00187000          
+REAL compiledWhen;                                                      00188000          
+                                                                        00189000          
+EBCDIC ARRAY compiledDisplay [0:79];                                    00190000          
+                                                                        00191000          
+%----------------------------------------------------------------------%00192000          
+%                                                                      %00193000          
+%                             Global Defines                           %00194000          
+%                                                                      %00195000          
+%----------------------------------------------------------------------%00196000          
+                                                                        00197000          
+DEFINE                                                                  00198000          
+  aCrLf     =  47"0D0A" FOR 2 #     % ASCII CARRAIGE-RETURN LINE-FEED   00199000          
+ ,aQuote    =  47"22"   FOR 1 #     % ASCII "  (double-quote)           00200000          
+                                                                        00201000          
+ ,html_head = 7"<HTML>",                                                00202000          
+              7"<HEAD><TITLE>APIDEMO</TITLE></HEAD>",                   00203000          
+              7"<BODY BGCOLOR=",  aQuote,  7"#FFFFFF",  aQuote,  7">"  #00204000          
+ ,html_tail = 7"</BODY></HTML>" #                                       00205000          
+                                                                        00206000          
+ ,progId    =  "APIDEMO: " #    % used for DISPLAYs                     00207000          
+ ,Null      =  48"00"      #                                            00208000          
+ ;                                                                      00209000          
+                                                                        00210000          
+EVENT libLinkedEvent;   % linked to atlas                               00211000          
+EVENT libEojEvent;      % atlas is terminating, or serious error found  00212000          
+                                                                        00213000          
+DEFINE                                                                  00214000          
+  T7Yearf     =  [47:12]  #                                             00215000          
+ ,T7Monthf    =  [35:06]  #                                             00216000          
+ ,T7Dayf      =  [29:06]  #                                             00217000          
+ ,T7Hourf     =  [23:06]  #                                             00218000          
+ ,T7Minutef   =  [17:06]  #                                             00219000          
+ ,T7Secondf   =  [11:06]  #                                             00220000          
+ ,T7WeekDayf  =  [05:06]  #                                             00221000          
+ ;                                                                      00222000          
+                                                                        00223000          
+                                                                        00224000          
+%----------------------------------------------------------------------%00225000          
+%                                                                      %00226000          
+%                 Global Variables                                     %00227000          
+%                                                                      %00228000          
+%----------------------------------------------------------------------%00229000          
+                                                                        00230000          
+DEFINE                                                                  00231000          
+ AAPI_Successful   =  1#,    % result values for Atlas calls            00232000          
+ AAPI_NoOp         =  0#,                                               00233000          
+ AAPI_InvalidId    = -1#,                                               00234000          
+ AAPI_RspNotAllowed= -2#,                                               00235000          
+ AAPI_Fault        = -3#;                                               00236000          
+                                                                        00237000          
+                                                                        00238000          
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%00239000          
+%                                                                       00240000          
+%                        Atlas API Interface                            00241000          
+%                                                                       00242000          
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%00243000          
+                                                                        00244000          
+                                                                        00245000          
+TYPE CONNECTION BLOCK httpApiType;                                      00246000          
+BEGIN                                                                   00247000          
+                                                                        00248000          
+                                                                        00249000          
+PROCEDURE httpApiChange (Conn_Index, New_State, Reason, Actor, ImDSed); 00250000          
+   VALUE                 Conn_Index, New_State, Reason,        ImDSed;  00251000          
+   INTEGER               Conn_Index, New_State, Reason;                 00252000          
+   TASK                                                 Actor;          00253000          
+   BOOLEAN                                                     ImDSed;  00254000          
+BEGIN                                                                   00255000          
+% Insert code here as necessary to handle changes in linkage state      00256000          
+% of the connection to Atlas.                                           00257000          
+                                                                        00258000          
+  CASE New_State OF                                                     00259000          
+    BEGIN                                                               00260000          
+    VALUE (NOTLINKED):                                                  00261000          
+       BEGIN                                                            00262000          
+       CAUSE (libEojEvent);                                             00263000          
+       END;                                                             00264000          
+    VALUE (LINKING):                                                    00265000          
+       ;  % do nothing                                                  00266000          
+    VALUE (LINKED):                                                     00267000          
+       BEGIN                                                            00268000          
+       CAUSE (libLinkedEvent);                                          00269000          
+       END;                                                             00270000          
+    VALUE (DELINKING):                                                  00271000          
+       BEGIN                                                            00272000          
+       CAUSE (libEojEvent);                                             00273000          
+       END;                                                             00274000          
+    ELSE:                                                               00275000          
+       DISPLAY (progId  CAT                                             00276000          
+                "Unknown New State in Change Approval Procedure");      00277000          
+    END;  % case New_State                                              00278000          
+END OF httpApiChange;                                                   00279000          
+                                                                        00280000          
+                                                                        00281000          
+INTEGER PROCEDURE finish (serverTransId);                               00282000          
+      VALUE               serverTransId;                                00283000          
+      REAL                serverTransId;                                00284000          
+   IMPORTED;                                                            00285000          
+                                                                        00286000          
+INTEGER PROCEDURE getApplicationPath (serverTransId, aPtr);             00287000          
+      VALUE                           serverTransId, aPtr;              00288000          
+      REAL                            serverTransId;                    00289000          
+      POINTER                                        aPtr;              00290000          
+   IMPORTED;                                                            00291000          
+                                                                        00292000          
+INTEGER PROCEDURE getAuthType (serverTransId, aPtr);                    00293000          
+      VALUE                    serverTransId, aPtr;                     00294000          
+      REAL                     serverTransId;                           00295000          
+      POINTER                                 aPtr;                     00296000          
+   IMPORTED;                                                            00297000          
+                                                                        00298000          
+INTEGER PROCEDURE getContentLength (serverTransId, aLen);               00299000          
+      VALUE                         serverTransId;                      00300000          
+      REFERENCE                                    aLen;                00301000          
+      REAL                          serverTransId;                      00302000          
+      INTEGER                                      aLen;                00303000          
+   IMPORTED;                                                            00304000          
+                                                                        00305000          
+INTEGER PROCEDURE getContentType (serverTransId, aPtr);                 00306000          
+      VALUE                       serverTransId, aPtr;                  00307000          
+      REAL                        serverTransId;                        00308000          
+      POINTER                                    aPtr;                  00309000          
+   IMPORTED;                                                            00310000          
+                                                                        00311000          
+INTEGER PROCEDURE getHeader (serverTransId, aNamePtr, aValuePtr);       00312000          
+      VALUE                  serverTransId, aNamePtr, aValuePtr;        00313000          
+      REAL                   serverTransId;                             00314000          
+      POINTER                               aNamePtr, aValuePtr;        00315000          
+   IMPORTED;                                                            00316000          
+                                                                        00317000          
+INTEGER PROCEDURE getIntHeader (serverTransId, aNamePtr, int);          00318000          
+      VALUE                     serverTransId, aNamePtr;                00319000          
+      REFERENCE                                          int;           00320000          
+      REAL                      serverTransId;                          00321000          
+      POINTER                                  aNamePtr;                00322000          
+      INTEGER                                            int;           00323000          
+   IMPORTED;                                                            00324000          
+                                                                        00325000          
+INTEGER PROCEDURE getMethod (serverTransId, aPtr);                      00326000          
+      VALUE                  serverTransId, aPtr;                       00327000          
+      REAL                   serverTransId;                             00328000          
+      POINTER                               aPtr;                       00329000          
+   IMPORTED;                                                            00330000          
+                                                                        00331000          
+INTEGER PROCEDURE getMimeType (serverTransId, aPathPtr, aMimePtr);      00332000          
+      VALUE                    serverTransId, aPathPtr, aMimePtr;       00333000          
+      REAL                     serverTransId;                           00334000          
+      POINTER                                 aPathPtr, aMimePtr;       00335000          
+   IMPORTED;                                                            00336000          
+                                                                        00337000          
+INTEGER PROCEDURE getPathInfo (serverTransId, aPtr);                    00338000          
+      VALUE                    serverTransId, aPtr;                     00339000          
+      REAL                     serverTransId;                           00340000          
+      POINTER                                 aPtr;                     00341000          
+   IMPORTED;                                                            00342000          
+                                                                        00343000          
+INTEGER PROCEDURE getPathTranslated (serverTransId, aPtr);              00344000          
+      VALUE                          serverTransId, aPtr;               00345000          
+      REAL                           serverTransId;                     00346000          
+      POINTER                                       aPtr;               00347000          
+   IMPORTED;                                                            00348000          
+                                                                        00349000          
+INTEGER PROCEDURE getProviderInfo   (aPtr);                             00350000          
+      VALUE                          aPtr;                              00351000          
+      POINTER                        aPtr;                              00352000          
+   IMPORTED;                                                            00353000          
+                                                                        00354000          
+INTEGER PROCEDURE getRealPath (serverTransId, aVirtualPtr, aRealPtr);   00355000          
+      VALUE                    serverTransId, aVirtualPtr, aRealPtr;    00356000          
+      REAL                     serverTransId;                           00357000          
+      POINTER                                 aVirtualPtr, aRealPtr;    00358000          
+   IMPORTED;                                                            00359000          
+                                                                        00360000          
+INTEGER PROCEDURE getRemoteAddr (serverTransId, aPtr);                  00361000          
+      VALUE                      serverTransId, aPtr;                   00362000          
+      REAL                       serverTransId;                         00363000          
+      POINTER                                   aPtr;                   00364000          
+   IMPORTED;                                                            00365000          
+                                                                        00366000          
+INTEGER PROCEDURE getRemoteAddrWord (serverTransId, w);                 00367000          
+      VALUE                          serverTransId;                     00368000          
+      REAL                           serverTransId, w;                  00369000          
+   IMPORTED;                                                            00370000          
+                                                                        00371000          
+INTEGER PROCEDURE getRemoteHost (serverTransId, aPtr);                  00372000          
+      VALUE                      serverTransId, aPtr;                   00373000          
+      REAL                       serverTransId;                         00374000          
+      POINTER                                   aPtr;                   00375000          
+   IMPORTED;                                                            00376000          
+                                                                        00377000          
+INTEGER PROCEDURE getRemotePort (serverTransId, port);                  00378000          
+      VALUE                      serverTransId;                         00379000          
+      REAL                       serverTransId;                         00380000          
+      INTEGER                                   port;                   00381000          
+   IMPORTED;                                                            00382000          
+                                                                        00383000          
+INTEGER PROCEDURE getPostedData (serverTransId, aDataPtr, aMaxLen,      00384000          
+                                    aDataLen);                          00385000          
+      VALUE                      serverTransId, aDataPtr, aMaxLen;      00386000          
+      REFERENCE                     aDataLen;                           00387000          
+      REAL                       serverTransId;                         00388000          
+      POINTER                                   aDataPtr;               00389000          
+      INTEGER                                             aMaxLen,      00390000          
+                                    aDataLen;                           00391000          
+   IMPORTED;                                                            00392000          
+                                                                        00393000          
+INTEGER PROCEDURE getProtocol (serverTransId, aPtr);                    00394000          
+      VALUE                    serverTransId, aPtr;                     00395000          
+      REAL                     serverTransId;                           00396000          
+      POINTER                                 aPtr;                     00397000          
+   IMPORTED;                                                            00398000          
+                                                                        00399000          
+INTEGER PROCEDURE getQueryString (serverTransId, aPtr);                 00400000          
+      VALUE                       serverTransId, aPtr;                  00401000          
+      REAL                        serverTransId;                        00402000          
+      POINTER                                    aPtr;                  00403000          
+   IMPORTED;                                                            00404000          
+                                                                        00405000          
+INTEGER PROCEDURE getRemoteUser (serverTransId, aPtr);                  00406000          
+      VALUE                      serverTransId, aPtr;                   00407000          
+      REAL                       serverTransId;                         00408000          
+      POINTER                                   aPtr;                   00409000          
+   IMPORTED;                                                            00410000          
+                                                                        00411000          
+INTEGER PROCEDURE getRequestInfo                                        00412000          
+                    (serverTransId, RequestLineLength, HeaderLength,    00413000          
+                     URILength,     PathLength,        QueryLength  );  00414000          
+      VALUE          serverTransId;                                     00415000          
+      REFERENCE                     RequestLineLength, HeaderLength,    00416000          
+                     URILength,     PathLength,        QueryLength;     00417000          
+      REAL           serverTransId;                                     00418000          
+      INTEGER                       RequestLineLength, HeaderLength,    00419000          
+                     URILength,     PathLength,        QueryLength;     00420000          
+   IMPORTED;                                                            00421000          
+                                                                        00422000          
+INTEGER PROCEDURE getRequestLine (serverTransId, aPtr);                 00423000          
+      VALUE                       serverTransId, aPtr;                  00424000          
+      REAL                        serverTransId;                        00425000          
+      POINTER                                    aPtr;                  00426000          
+   IMPORTED;                                                            00427000          
+                                                                        00428000          
+INTEGER PROCEDURE getRequestPath (serverTransId, aPtr);                 00429000          
+      VALUE                       serverTransId, aPtr;                  00430000          
+      REAL                        serverTransId;                        00431000          
+      POINTER                                    aPtr;                  00432000          
+   IMPORTED;                                                            00433000          
+                                                                        00434000          
+INTEGER PROCEDURE getRequestURI (serverTransId, aPtr);                  00435000          
+      VALUE                      serverTransId, aPtr;                   00436000          
+      REAL                       serverTransId;                         00437000          
+      POINTER                                   aPtr;                   00438000          
+   IMPORTED;                                                            00439000          
+                                                                        00440000          
+INTEGER PROCEDURE getServerName (serverTransId, aPtr);                  00441000          
+      VALUE                      serverTransId, aPtr;                   00442000          
+      REAL                       serverTransId;                         00443000          
+      POINTER                                   aPtr;                   00444000          
+   IMPORTED;                                                            00445000          
+                                                                        00446000          
+INTEGER PROCEDURE getServerPort (serverTransId, int);                   00447000          
+      VALUE                      serverTransId;                         00448000          
+      REFERENCE                                 int;                    00449000          
+      REAL                       serverTransId;                         00450000          
+      INTEGER                                   int;                    00451000          
+   IMPORTED;                                                            00452000          
+                                                                        00453000          
+INTEGER PROCEDURE getTotalBytes (serverTransId, aLen);                  00454000          
+      VALUE                      serverTransId;                         00455000          
+      REFERENCE                                 aLen;                   00456000          
+      REAL                       serverTransId;                         00457000          
+      INTEGER                                   aLen;                   00458000          
+   IMPORTED;                                                            00459000          
+                                                                        00460000          
+INTEGER PROCEDURE initAppl (aPtr);                                      00461000          
+      VALUE                 aPtr;                                       00462000          
+      POINTER               aPtr;                                       00463000          
+   IMPORTED;                                                            00464000          
+                                                                        00465000          
+INTEGER PROCEDURE initRsp (serverTransId, applTransId);                 00466000          
+      VALUE                serverTransId, applTransId;                  00467000          
+      REAL                 serverTransId, applTransId;                  00468000          
+   IMPORTED;                                                            00469000          
+                                                                        00470000          
+INTEGER PROCEDURE isSecure (serverTransId);                             00471000          
+      VALUE                 serverTransId;                              00472000          
+      REAL                  serverTransId;                              00473000          
+   IMPORTED;                                                            00474000          
+                                                                        00475000          
+INTEGER PROCEDURE postNewReq (serverTransId);                           00476000          
+      REFERENCE               serverTransId;                            00477000          
+      REAL                    serverTransId;                            00478000          
+   IMPORTED;                                                            00479000          
+                                                                        00480000          
+INTEGER PROCEDURE postOutEvt (serverTransId, applTransId);              00481000          
+      REAL                    serverTransId, applTransId;               00482000          
+   IMPORTED;                                                            00483000          
+                                                                        00484000          
+INTEGER PROCEDURE sendContent (serverTransId, aPtr, aLen, sentLen);     00485000          
+      VALUE                    serverTransId, aPtr, aLen;               00486000          
+      REFERENCE                                           sentLen;      00487000          
+      REAL                     serverTransId;                           00488000          
+      INTEGER                                       aLen, sentLen;      00489000          
+      POINTER                                 aPtr;                     00490000          
+   IMPORTED;                                                            00491000          
+                                                                        00492000          
+INTEGER PROCEDURE sendContentAsync (serverTransId, aPtr, aLen, sentLen);00493000          
+      VALUE                         serverTransId, aPtr, aLen;          00494000          
+      REFERENCE                                                sentLen; 00495000          
+      REAL                          serverTransId;                      00496000          
+      INTEGER                                            aLen, sentLen; 00497000          
+      POINTER                                      aPtr;                00498000          
+   IMPORTED;                                                            00499000          
+                                                                        00500000          
+INTEGER PROCEDURE sendError (serverTransId, aPtr, aLen);                00501000          
+      VALUE                  serverTransId, aPtr, aLen;                 00502000          
+      REAL                   serverTransId;                             00503000          
+      POINTER                               aPtr;                       00504000          
+      INTEGER                                     aLen;                 00505000          
+   IMPORTED;                                                            00506000          
+                                                                        00507000          
+INTEGER PROCEDURE setContentType (serverTransId, aPtr);                 00508000          
+      VALUE                       serverTransId, aPtr;                  00509000          
+      REAL                        serverTransId;                        00510000          
+      POINTER                                    aPtr;                  00511000          
+   IMPORTED;                                                            00512000          
+                                                                        00513000          
+INTEGER PROCEDURE setContentLength (serverTransId, int);                00514000          
+      VALUE                         serverTransId, int;                 00515000          
+      REAL                          serverTransId;                      00516000          
+      INTEGER                                      int;                 00517000          
+   IMPORTED;                                                            00518000          
+                                                                        00519000          
+INTEGER PROCEDURE setIntHeader (serverTransId, aPtr, int);              00520000          
+      VALUE                     serverTransId, aPtr, int;               00521000          
+      REAL                      serverTransId;                          00522000          
+      POINTER                                  aPtr;                    00523000          
+      INTEGER                                        int;               00524000          
+   IMPORTED;                                                            00525000          
+                                                                        00526000          
+INTEGER PROCEDURE setHeader (serverTransId, aNamePtr, aValuePtr);       00527000          
+      VALUE                  serverTransId, aNamePtr, aValuePtr;        00528000          
+      REAL                   serverTransId;                             00529000          
+      POINTER                               aNamePtr, aValuePtr;        00530000          
+   IMPORTED;                                                            00531000          
+                                                                        00532000          
+INTEGER PROCEDURE setRedirect (serverTransId, aPtr);                    00533000          
+      VALUE                    serverTransId, aPtr;                     00534000          
+      REAL                     serverTransId;                           00535000          
+      POINTER                                 aPtr;                     00536000          
+   IMPORTED;                                                            00537000          
+                                                                        00538000          
+INTEGER PROCEDURE setStatusCode (serverTransId, sCode, aPtr);           00539000          
+      VALUE                      serverTransId, sCode, aPtr;            00540000          
+      REAL                       serverTransId;                         00541000          
+      INTEGER                                   sCode;                  00542000          
+      POINTER                                          aPtr;            00543000          
+   IMPORTED;                                                            00544000          
+                                                                        00545000          
+INTEGER PROCEDURE utAuthorized (serverTransId);                         00546000          
+      VALUE                     serverTransId;                          00547000          
+      REAL                      serverTransId;                          00548000          
+   IMPORTED;                                                            00549000          
+                                                                        00550000          
+INTEGER PROCEDURE utDateToInt (aPtr, int);                              00551000          
+      VALUE                    aPtr;                                    00552000          
+      REFERENCE                      int;                               00553000          
+      POINTER                  aPtr;                                    00554000          
+      INTEGER                        int;                               00555000          
+   IMPORTED;                                                            00556000          
+                                                                        00557000          
+INTEGER PROCEDURE utDateToTime57 (aPtr, time57);                        00558000          
+      VALUE                       aPtr;                                 00559000          
+      REFERENCE                         time57;                         00560000          
+      POINTER                     aPtr;                                 00561000          
+      REAL                              time57;                         00562000          
+   IMPORTED;                                                            00563000          
+                                                                        00564000          
+INTEGER PROCEDURE utEscape (srcPtr, dstPtr);                            00565000          
+      VALUE                 srcPtr, dstPtr;                             00566000          
+      POINTER               srcPtr, dstPtr;                             00567000          
+   IMPORTED;                                                            00568000          
+                                                                        00569000          
+INTEGER PROCEDURE utIntToDate (int, aPtr);                              00570000          
+      VALUE                    int, aPtr;                               00571000          
+      INTEGER                  int;                                     00572000          
+      POINTER                       aPtr;                               00573000          
+   IMPORTED;                                                            00574000          
+                                                                        00575000          
+INTEGER PROCEDURE utIntToTime57 (int, time57);                          00576000          
+      VALUE                      int;                                   00577000          
+      REFERENCE                       time57;                           00578000          
+      INTEGER                    int;                                   00579000          
+      REAL                            time57;                           00580000          
+   IMPORTED;                                                            00581000          
+                                                                        00582000          
+INTEGER PROCEDURE utParseQueryString (serverTransId, aPtr, Names,       00583000          
+                                         Values);                       00584000          
+      VALUE                           serverTransId, aPtr;              00585000          
+      REAL                            serverTransId;                    00586000          
+      POINTER                                        aPtr;              00587000          
+      ARRAY                                                Names [0],   00588000          
+                                         Values [0];                    00589000          
+   IMPORTED;                                                            00590000          
+                                                                        00591000          
+INTEGER PROCEDURE utParsePostData (serverTransId, aPtr, Names, Values); 00592000          
+      VALUE                        serverTransId, aPtr;                 00593000          
+      REAL                         serverTransId;                       00594000          
+      POINTER                                     aPtr;                 00595000          
+      ARRAY                                            Names, Values[0];00596000          
+   IMPORTED;                                                            00597000          
+                                                                        00598000          
+INTEGER PROCEDURE utParseHeaders (serverTransId, aPtr, Names, Values);  00599000          
+      VALUE                       serverTransId, aPtr;                  00600000          
+      REAL                        serverTransId;                        00601000          
+      POINTER                                    aPtr;                  00602000          
+      ARRAY                                            Names, Values[0];00603000          
+   IMPORTED;                                                            00604000          
+                                                                        00605000          
+INTEGER PROCEDURE utTime57ToDate (time57, aPtr);                        00606000          
+      VALUE                       time57, aPtr;                         00607000          
+      REAL                        time57;                               00608000          
+      POINTER                             aPtr;                         00609000          
+   IMPORTED;                                                            00610000          
+                                                                        00611000          
+INTEGER PROCEDURE utTime57ToInt (time57, int);                          00612000          
+      VALUE                      time57;                                00613000          
+      REFERENCE                          int;                           00614000          
+      REAL                       time57;                                00615000          
+      INTEGER                            int;                           00616000          
+   IMPORTED;                                                            00617000          
+                                                                        00618000          
+INTEGER PROCEDURE utUnescape (srcPtr, dstPtr);                          00619000          
+      VALUE                   srcPtr, dstPtr;                           00620000          
+      POINTER                 srcPtr, dstPtr;                           00621000          
+   IMPORTED;                                                            00622000          
+                                                                        00623000          
+INTEGER PROCEDURE utUserIsPu (serverTransId);                           00624000          
+      VALUE                   serverTransId;                            00625000          
+      REAL                    serverTransId;                            00626000          
+   IMPORTED;                                                            00627000          
+                                                                        00628000          
+                                                                        00629000          
+EVENT  newReqEvt, outEvt;         % (required spelling of event names)  00630000          
+                                                                        00631000          
+EXPORT newReqEvt, outEvt;                                               00632000          
+                                                                        00633000          
+                                                                        00634000          
+          %--------                                                     00635000          
+PROCEDURE  mainLoop;                                                    00636000          
+          %--------                                                     00637000          
+BEGIN                                                                   00638000          
+  BOOLEAN stopRunning;                                                  00639000          
+  DEFINE maxPath = 2048 #;    % maximum length of a path                00640000          
+  ARRAY realWord [0:0];                                                 00641000          
+  ASCII VALUE ARRAY AcceptMsg (            % (update <AcceptMsgLen> too)00642000          
+    7"An operator has answered the ACCEPT.");                           00643000          
+  DEFINE AcceptMsgLen =  36 #;                                          00644000          
+  ASCII VALUE ARRAY ErrorMsg (             %  (update <ErrorMsgLen> too)00645000          
+    7"Invalid Function. Please click this "                             00646000          
+    7"<A HREF=" 47"22" 7"/cgilib/apidemo/apienv.htm" 47"22"             00647000          
+    7"> <B> menu</B></A> and select from there.");                      00648000          
+  DEFINE ErrorMsgLen = 113 #;                                           00649000          
+  ASCII VALUE ARRAY                                                     00650000          
+    blue               (47"22" 7"#000FFF" 47"22"),                      00651000          
+    red                (47"22" 7"#F00000" 47"22"),                      00652000          
+    nullString         (47"00"),                                        00653000          
+    HtmlPathName       (7"/myfile.html" 47"00"),                        00654000          
+    textPlain          (7"text/plain" 47"00"),                          00655000          
+    textHtml           (7"text/html" 47"00"),                           00656000          
+    iconPath           (7"/icons/" 47"00"),                             00657000          
+    userAgentHdr       (7"User-Agent" 47"00"),                          00658000          
+    dateHdr            (7"Date" 47"0000000000"),                        00659000          
+    contentLengthHdr   (7"Content-length" 47"00"),                      00660000          
+    contentTypeHdr     (7"Content-type" 47"00");                        00661000          
+  DEFINE blueColor = blue[0] FOR 9 #,                                   00662000          
+         RedColor  = red [0] FOR 9 #;                                   00663000          
+                                                                        00664000          
+  INTEGER                currIntDate;                                   00665000          
+  ASCII  ARRAY           currDate    [0:  255];                         00666000          
+  HEX    ARRAY REFERENCE hexWord [0];                                   00667000          
+         ARRAY           names       [0:  255];                         00668000          
+  INTEGER                reqContLen;                                    00669000          
+  ASCII  ARRAY           reqContType [0:  255];                         00670000          
+  ASCII  ARRAY           rsp         [0:65535];                         00671000          
+  ASCII  ARRAY           scratch1    [0:maxPath];                       00672000          
+  ASCII  ARRAY           scratch2    [0:65535];                         00673000          
+         ARRAY           values      [0:  255];                         00674000          
+                                                                        00675000          
+            %------------                                               00676000          
+  PROCEDURE  do_SendAsync  (tId, myTrans);                              00677000          
+            %------------                                               00678000          
+     VALUE                  tId, myTrans;                               00679000          
+     REAL                   tId;                                        00680000          
+     INTEGER                     myTrans;                               00681000          
+    % We want to send the content asynchronously, so that if            00682000          
+    %  Atlas is blocked from sending all data, control will             00683000          
+    %  return to us and we can process other requests.  When            00684000          
+    %  Atlas is able to send more data it will set an event,            00685000          
+    %  and this procedure will be called again to try to send           00686000          
+    %  the remainder of the data.                                       00687000          
+  BEGIN                                                                 00688000          
+    INTEGER rslt, lenSent;                                              00689000          
+                                                                        00690000          
+    rslt := sendContentAsync (tId,                                      00691000          
+                              dataToSend [offsets[myTrans]],            00692000          
+                              lenToSend[myTrans] - offsets[myTrans],    00693000          
+                              lenSent);                                 00694000          
+    IF rslt = aapi_Successful                                           00695000          
+    THEN                                                                00696000          
+      BEGIN                                                             00697000          
+        IF (offsets [myTrans] := * + lenSent) GEQ lenToSend [myTrans]   00698000          
+        THEN  % done sending                                            00699000          
+          BEGIN                                                         00700000          
+            finish (tId);                                               00701000          
+            putAvailTrans (myTrans);                                    00702000          
+          END;  % done sending                                          00703000          
+         % ELSE not all sent, wait for outEvt                           00704000          
+      END  % aapi_Successful                                            00705000          
+    ELSE                                                                00706000          
+    IF rslt = aapi_InvalidId                                            00707000          
+    THEN                                                                00708000          
+      putAvailTrans (myTrans)                                           00709000          
+    ELSE  % unhandled result                                            00710000          
+      BEGIN                                                             00711000          
+        DISPLAY (progId  CAT  "Send Async Error!!!");                   00712000          
+        CAUSE (libEojEvent);                                            00713000          
+      END;                                                              00714000          
+                                                                        00715000          
+  END OF do_SendAsync;                                                  00716000          
+                                                                        00717000          
+            %------------------                                         00718000          
+  PROCEDURE  processEnvironment  (tId);                                 00719000          
+            %------------------                                         00720000          
+     VALUE                tId;                                          00721000          
+     REAL                 tId;                                          00722000          
+    %  Parse out and display the environment variables.                 00723000          
+  BEGIN                                                                 00724000          
+    POINTER pRsp;                                                       00725000          
+    INTEGER lenSent;                                                    00726000          
+    INTEGER aapi;                                                       00727000          
+                                                                        00728000          
+    DEFINE showResult (s) =                                             00729000          
+      IF aapi = aapi_successful THEN                                    00730000          
+      BEGIN                                                             00731000          
+        REPLACE pRsp:pRsp BY                                            00732000          
+          7"<H3>", s, 7" = ",                                           00733000          
+          7"<FONT color=", blueColor, 7">",                             00734000          
+          STRING7 (aapi, *),                                            00735000          
+          7"</FONT>",                                                   00736000          
+          7".</H3> ";                                                   00737000          
+      END                                                               00738000          
+      ELSE                                                              00739000          
+      BEGIN                                                             00740000          
+        REPLACE pRsp:pRsp BY                                            00741000          
+          7"<H3>",  s,  7" = ",                                         00742000          
+          7"<FONT color=",  RedColor,  7">",                            00743000          
+          STRING7(aapi, *),                                             00744000          
+          7"</FONT>",                                                   00745000          
+          7".</H3> ";                                                   00746000          
+      END #,                                                            00747000          
+                                                                        00748000          
+      showParm (n, v) =             % show atlas parameter              00749000          
+        REPLACE pRsp:pRsp BY                                            00750000          
+          n,  7" = ",                                                   00751000          
+          7"<FONT color=",  aQuote,  7"#000FFF",  aQuote,  7">",  v,    00752000          
+          7"</FONT> "  #;                                               00753000          
+                                                                        00754000          
+              %-----------                                              00755000          
+    PROCEDURE  parseReport  (data, names, values);                      00756000          
+              %-----------                                              00757000          
+       ASCII ARRAY           data[0];                                   00758000          
+             ARRAY                 names, values[0];                    00759000          
+    BEGIN                                                               00760000          
+      BOOLEAN nameExists;                                               00761000          
+      INTEGER i, nameCnt, valCnt, off, len;                             00762000          
+                                                                        00763000          
+      nameCnt := names  [0];                                            00764000          
+      valCnt  := values [0];                                            00765000          
+      REPLACE pRsp:pRsp BY                                              00766000          
+        7"<TABLE BORDER=", aQuote, 7"1", aQuote,                        00767000          
+          7"CELLSPACING=", aQuote, 7"1", aQuote, 7">",     aCrLf;       00768000          
+      REPLACE pRsp:pRsp BY                                              00769000          
+        7"<TR>",                                           aCrLf,       00770000          
+          7"<TD WIDTH=", aQuote, 7"150", aQuote, 7">",                  00771000          
+            7"<B>Name</B></TD>",                           aCrLf,       00772000          
+          7"<TD ALIGN=", aQuote, 7"right", aQuote, 7">",                00773000          
+            7"<B>Offset</B></TD>",                         aCrLf,       00774000          
+          7"<TD ALIGN=", aQuote, 7"RIGHT", aQuote, 7">",                00775000          
+            7"<B>Length</B></TD>",                         aCrLf,       00776000          
+          7"<TD WIDTH=", aQuote, 7"350", aQuote, 7">",                  00777000          
+            7"<B>Value</B></TD>",                          aCrLf,       00778000          
+          7"<TD ALIGN=", aQuote, 7"RIGHT", aQuote, 7">",                00779000          
+            7"<B>Offset</B></TD>",                         aCrLf,       00780000          
+          7"<TD ALIGN=", aQuote, 7"RIGHT", aQuote, 7">",                00781000          
+            7"<B>Length</B></TD>",                         aCrLf,       00782000          
+        7"</TR>",                                          aCrLf;       00783000          
+      FOR i := 1 STEP 1 UNTIL MAX (nameCnt, valCnt) DO                  00784000          
+      BEGIN                                                             00785000          
+        REPLACE pRsp:pRsp BY 7"<TR>",            aCrLf,                 00786000          
+          7"<TD WIDTH=", aQuote, 7"150", aQuote, 7">",                  00787000          
+            data[off := names[i].[31:16]] FOR           % Name          00788000          
+                 len := names[i].[15:16],                               00789000          
+            7"</TD>",                            aCrLf,                 00790000          
+          7"<TD ALIGN=", aQuote, 7"RIGHT", aQuote, 7">",                00791000          
+            STRING7(off, *),                            % Name's Offset 00792000          
+            7"</TD>",                            aCrLf,                 00793000          
+          7"<TD ALIGN=", aQuote, 7"RIGHT", aQuote, 7">",                00794000          
+            STRING7(len, *),                            % Name's Length 00795000          
+            7"</TD>",                            aCrLf,                 00796000          
+          7"<TD WIDTH=", aQuote, 7"350", aQuote, 7">",                  00797000          
+            data[off := values[i].[31:16]] FOR          % Value         00798000          
+                 len := values[i].[15:16],                              00799000          
+            7"</TD>",                            aCrLf,                 00800000          
+          7"<TD ALIGN=", aQuote, 7"RIGHT", aQuote, 7">",                00801000          
+            STRING7(off, *),                            % Value's Offset00802000          
+            7"</TD>",                            aCrLf,                 00803000          
+          7"<TD ALIGN=", aQuote, 7"RIGHT", aQuote, 7">",                00804000          
+            STRING7(len, *),                            % Value's Length00805000          
+            7"</TD>",                            aCrLf,                 00806000          
+                                                                        00807000          
+          7"</TR>", aCrLf;                                              00808000          
+                                                                        00809000          
+      END;                                                              00810000          
+                                                                        00811000          
+      REPLACE pRsp:pRsp BY 7"</TABLE>", aCrLf;                          00812000          
+    END OF parseReport;                                                 00813000          
+                                                                        00814000          
+              %---------------------                                    00815000          
+    PROCEDURE  do_getApplicationPath;                                   00816000          
+              %---------------------                                    00817000          
+    BEGIN                                                               00818000          
+                                                                        00819000          
+      aapi := getApplicationPath (tId,scratch2);                        00820000          
+      showResult (7"getApplicationPath");                               00821000          
+      IF aapi = aapi_Successful                                         00822000          
+      THEN                                                              00823000          
+        showParm (7"ApplicationPath",                                   00824000          
+                  scratch2 FOR maxPath UNTIL = 47"00");                 00825000          
+    END OF do_getApplicationPath;                                       00826000          
+                                                                        00827000          
+              %--------------                                           00828000          
+    PROCEDURE  do_getAuthType;                                          00829000          
+              %--------------                                           00830000          
+    BEGIN                                                               00831000          
+                                                                        00832000          
+      aapi := getAuthType (tId, scratch2);                              00833000          
+      showResult (7"getAuthType");                                      00834000          
+      IF aapi = aapi_Successful                                         00835000          
+      THEN                                                              00836000          
+        showParm (7"AuthType",                                          00837000          
+                  scratch2 FOR maxPath UNTIL = 47"00");                 00838000          
+    END OF do_getAuthType;                                              00839000          
+                                                                        00840000          
+              %-------------------                                      00841000          
+    PROCEDURE  do_getContentLength;                                     00842000          
+              %-------------------                                      00843000          
+    BEGIN                                                               00844000          
+      INTEGER ContentLength;                                            00845000          
+                                                                        00846000          
+      aapi := getContentLength (tId, ContentLength);                    00847000          
+      showResult (7"getContentLength");                                 00848000          
+      IF aapi = aapi_Successful                                         00849000          
+      THEN                                                              00850000          
+        showParm (7"ContentLength", STRING7(ContentLength,*));          00851000          
+      reqContLen := contentLength;                                      00852000          
+    END OF do_getContentLength;                                         00853000          
+                                                                        00854000          
+              %-----------------                                        00855000          
+    PROCEDURE  do_getContentType;                                       00856000          
+              %-----------------                                        00857000          
+    BEGIN                                                               00858000          
+      INTEGER lLeft;                                                    00859000          
+                                                                        00860000          
+      aapi := getContentType (tId, scratch2);                           00861000          
+      showResult (7"getContentType");                                   00862000          
+      IF aapi = aapi_Successful                                         00863000          
+      THEN                                                              00864000          
+        BEGIN                                                           00865000          
+          showParm (7"ContentType",                                     00866000          
+                    scratch2 FOR lLeft:maxPath UNTIL = 47"00");         00867000          
+          REPLACE reqContType BY                                        00868000          
+            scratch2 FOR maxPath-lLeft WITH AU2L,                       00869000          
+                                 47"00" FOR 1;                          00870000          
+        END;                                                            00871000          
+    END OF do_getContentType;                                           00872000          
+                                                                        00873000          
+              %------------                                             00874000          
+    PROCEDURE  do_getHeader;                                            00875000          
+              %------------                                             00876000          
+    BEGIN                                                               00877000          
+                                                                        00878000          
+      aapi := getHeader (tId, userAgentHdr, scratch2);                  00879000          
+      showResult (7"getHeader");                                        00880000          
+      showParm (7"HeaderName",                                          00881000          
+                userAgentHdr FOR maxPath UNTIL = 47"00");               00882000          
+      IF aapi = aapi_Successful                                         00883000          
+      THEN                                                              00884000          
+        showParm (7"HeaderValue",                                       00885000          
+                  scratch2 FOR maxPath UNTIL = 47"00");                 00886000          
+    END OF do_getHeader;                                                00887000          
+                                                                        00888000          
+              %---------------                                          00889000          
+    PROCEDURE  do_getIntHeader;                                         00890000          
+              %---------------                                          00891000          
+    BEGIN                                                               00892000          
+      INTEGER ContentLength;                                            00893000          
+                                                                        00894000          
+      aapi := getIntHeader (tId, ContentLengthHdr, contentLength);      00895000          
+      showResult (7"getIntHeader");                                     00896000          
+      showParm (7"HeaderName",                                          00897000          
+                ContentLengthHdr FOR maxPath UNTIL = 47"00");           00898000          
+      IF aapi = aapi_Successful                                         00899000          
+      THEN                                                              00900000          
+        showParm (7"HeaderValue",                                       00901000          
+                  STRING7(contentLength, *));                           00902000          
+    END OF do_getIntHeader;                                             00903000          
+                                                                        00904000          
+              %------------                                             00905000          
+    PROCEDURE  do_getMethod;                                            00906000          
+              %------------                                             00907000          
+    BEGIN                                                               00908000          
+                                                                        00909000          
+      aapi := getMethod (tId, scratch2);                                00910000          
+      showResult (7"getMethod");                                        00911000          
+      IF aapi = aapi_Successful                                         00912000          
+      THEN                                                              00913000          
+        showParm (7"Method", scratch2 FOR maxPath UNTIL = 47"00");      00914000          
+    END OF do_getMethod;                                                00915000          
+                                                                        00916000          
+              %--------------                                           00917000          
+    PROCEDURE  do_getMimeType;                                          00918000          
+              %--------------                                           00919000          
+    BEGIN                                                               00920000          
+      aapi := getMimeType (tId, HtmlPathName, scratch2);                00921000          
+      showResult (7"getMimeType");                                      00922000          
+      showParm (7"PathName",                                            00923000          
+                HtmlPathName FOR maxPath UNTIL = 47"00");               00924000          
+      IF aapi = aapi_Successful                                         00925000          
+      THEN                                                              00926000          
+        showParm (7"MimeType",                                          00927000          
+                  scratch2 FOR maxPath UNTIL = 47"00");                 00928000          
+    END OF do_getMimeType;                                              00929000          
+                                                                        00930000          
+              %--------------                                           00931000          
+    PROCEDURE  do_getPathInfo;                                          00932000          
+              %--------------                                           00933000          
+    BEGIN                                                               00934000          
+                                                                        00935000          
+      aapi := getPathInfo (tId, scratch2);                              00936000          
+      showResult (7"getPathInfo");                                      00937000          
+      IF aapi = aapi_Successful                                         00938000          
+      THEN                                                              00939000          
+        showParm (7"PathInfo",                                          00940000          
+                  scratch2 FOR maxPath UNTIL = 47"00");                 00941000          
+    END OF do_getPathInfo;                                              00942000          
+                                                                        00943000          
+              %--------------------                                     00944000          
+    PROCEDURE  do_getPathTranslated;                                    00945000          
+              %--------------------                                     00946000          
+    BEGIN                                                               00947000          
+                                                                        00948000          
+      aapi := getPathTranslated (tId, scratch2);                        00949000          
+      showResult (7"getPathTranslated");                                00950000          
+      IF aapi = aapi_Successful                                         00951000          
+      THEN                                                              00952000          
+        showParm (7"PathTranslated",                                    00953000          
+                  scratch2 FOR maxPath UNTIL = 47"00");                 00954000          
+    END OF do_getPathTranslated;                                        00955000          
+                                                                        00956000          
+              %----------------                                         00957000          
+    PROCEDURE  do_getPostedData;                                        00958000          
+              %----------------                                         00959000          
+    BEGIN                                                               00960000          
+      INTEGER lenRead;                                                  00961000          
+      INTEGER segRead;                                                  00962000          
+                                                                        00963000          
+      IF reqContLen > SIZE (scratch2)                                   00964000          
+      THEN  % need to do multiple reads                                 00965000          
+         DO  BEGIN                                                      00966000          
+           aapi := getPostedData (tId, scratch2, SIZE(scratch2),        00967000          
+                                  segRead);                             00968000          
+           lenRead := * + segRead;                                      00969000          
+           END                                                          00970000          
+         UNTIL (aapi NEQ aapi_Successful  OR  segRead = 0)              00971000          
+      ELSE                                                              00972000          
+         aapi := getPostedData (tId, scratch2, reqContLen, lenRead);    00973000          
+      showResult (7"getPostedData");                                    00974000          
+      IF aapi = aapi_Successful                                         00975000          
+      OR aapi = aapi_NoOp                                               00976000          
+      THEN                                                              00977000          
+        BEGIN                                                           00978000          
+          showParm (7"DataLen",                                         00979000          
+                    STRING7(lenRead, *));                               00980000          
+          IF reqContType = 7"text/" FOR 5                               00981000          
+          OR reqContType = 7"application/x-www-form-urlencoded"         00982000          
+          OR reqContType = 7"multipart/form-data;" FOR 20               00983000          
+          THEN                                                          00984000          
+            showParm (7"Data",                                          00985000          
+                      7"<XMP>" C                                        00986000          
+                      scratch2 FOR MIN (999,lenRead) WITH A2Areadable  C00987000          
+                      7"</XMP>")                                        00988000          
+          ELSE                                                          00989000          
+            REPLACE pRsp:pRsp BY 7"Data Not Displayable";               00990000          
+                                                                        00991000          
+        END;                                                            00992000          
+    END OF do_getPostedData;                                            00993000          
+                                                                        00994000          
+              %--------------                                           00995000          
+    PROCEDURE  do_getProtocol;                                          00996000          
+              %--------------                                           00997000          
+    BEGIN                                                               00998000          
+                                                                        00999000          
+      aapi := getProtocol (tId, scratch2);                              01000000          
+      showResult (7"getProtocol");                                      01001000          
+      IF aapi = aapi_Successful                                         01002000          
+      THEN                                                              01003000          
+        showParm (7"Protocol",                                          01004000          
+                  scratch2 FOR maxPath UNTIL = 47"00");                 01005000          
+    END OF do_getProtocol;                                              01006000          
+                                                                        01007000          
+              %------------------                                       01008000          
+    PROCEDURE  do_getProviderInfo;                                      01009000          
+              %------------------                                       01010000          
+    BEGIN                                                               01011000          
+                                                                        01012000          
+      aapi := getProviderInfo (scratch2);                               01013000          
+      showResult (7"getProviderInfo");                                  01014000          
+      IF aapi = aapi_Successful                                         01015000          
+      THEN                                                              01016000          
+        showParm (7"ProviderInfo",                                      01017000          
+                  scratch2 FOR maxPath UNTIL = 47"00");                 01018000          
+    END OF do_getProviderInfo;                                          01019000          
+                                                                        01020000          
+              %-----------------                                        01021000          
+    PROCEDURE  do_getQueryString;                                       01022000          
+              %-----------------                                        01023000          
+    BEGIN                                                               01024000          
+                                                                        01025000          
+      aapi := getQueryString (tId, scratch2);                           01026000          
+      showResult (7"getQueryString");                                   01027000          
+      IF aapi = aapi_Successful                                         01028000          
+      THEN                                                              01029000          
+        showParm (7"QueryString",                                       01030000          
+                  scratch2 FOR maxPath UNTIL = 47"00");                 01031000          
+    END OF do_getQueryString;                                           01032000          
+                                                                        01033000          
+              %--------------                                           01034000          
+    PROCEDURE  do_getRealPath;                                          01035000          
+              %--------------                                           01036000          
+    BEGIN                                                               01037000          
+                                                                        01038000          
+      aapi := getRealPath (tId, iconPath, scratch2);                    01039000          
+      showResult (7"getRealPath");                                      01040000          
+      showParm (7"VirtualPath",                                         01041000          
+                iconPath FOR maxPath UNTIL = 47"00");                   01042000          
+      IF aapi = aapi_Successful                                         01043000          
+      THEN                                                              01044000          
+        showParm (7"RealPath",                                          01045000          
+                  scratch2 FOR maxPath UNTIL = 47"00");                 01046000          
+    END OF do_getRealPath;                                              01047000          
+                                                                        01048000          
+              %----------------                                         01049000          
+    PROCEDURE  do_getRemoteAddr;                                        01050000          
+              %----------------                                         01051000          
+    BEGIN                                                               01052000          
+                                                                        01053000          
+      aapi := getRemoteAddr (tId, scratch2);                            01054000          
+      showResult (7"getRemoteAddr");                                    01055000          
+      IF aapi = aapi_Successful                                         01056000          
+      THEN                                                              01057000          
+        showParm (7"RemoteAddr",                                        01058000          
+                  scratch2 FOR maxPath UNTIL = 47"00");                 01059000          
+    END OF do_getRemoteAddr;                                            01060000          
+                                                                        01061000          
+              %--------------------                                     01062000          
+    PROCEDURE  do_getRemoteAddrWord;                                    01063000          
+              %--------------------                                     01064000          
+    BEGIN                                                               01065000          
+        REAL  ipAddr;                                                   01066000          
+                                                                        01067000          
+      aapi := getRemoteAddrWord (tId, ipAddr);                          01068000          
+      showResult (7"getRemoteAddrWord");                                01069000          
+      IF aapi = aapi_Successful                                         01070000          
+      THEN                                                              01071000          
+        showParm (7"RemoteAddrWord",                                    01072000          
+                  STRING7 (ipAddr.[31:8],*)  C  7"."  C                 01073000          
+                  STRING7 (ipAddr.[23:8],*)  C  7"."  C                 01074000          
+                  STRING7 (ipAddr.[15:8],*)  C  7"."  C                 01075000          
+                  STRING7 (ipAddr.[ 7:8],*)           );                01076000          
+    END OF do_getRemoteAddrWord;                                        01077000          
+                                                                        01078000          
+              %----------------                                         01079000          
+    PROCEDURE  do_getRemoteHost;                                        01080000          
+              %----------------                                         01081000          
+    BEGIN                                                               01082000          
+                                                                        01083000          
+      aapi := getRemoteHost (tId,scratch2);                             01084000          
+      showResult (7"getRemoteHost");                                    01085000          
+      IF aapi = aapi_Successful                                         01086000          
+      THEN                                                              01087000          
+        showParm (7"RemoteHost",                                        01088000          
+                  scratch2 FOR maxPath UNTIL = 47"00");                 01089000          
+    END OF do_getRemoteHost;                                            01090000          
+                                                                        01091000          
+              %----------------                                         01092000          
+    PROCEDURE  do_getRemotePort;                                        01093000          
+              %----------------                                         01094000          
+    BEGIN                                                               01095000          
+        POINTER  p;                                                     01096000          
+        INTEGER  port;                                                  01097000          
+                                                                        01098000          
+      aapi := getRemotePort (tId, port);                                01099000          
+      showResult (7"getRemotePort");                                    01100000          
+      IF aapi = aapi_Successful                                         01101000          
+      THEN                                                              01102000          
+      BEGIN                                                             01103000          
+        REPLACE p:scratch1 [0] BY port FOR * NUMERIC;                   01104000          
+        showParm (7"RemotePort",                                        01105000          
+                  scratch1 [0] FOR OFFSET(p) WITH E2A);                 01106000          
+      END;                                                              01107000          
+    END OF do_getRemotePort;                                            01108000          
+                                                                        01109000          
+              %----------------                                         01110000          
+    PROCEDURE  do_getRemoteUser;                                        01111000          
+              %----------------                                         01112000          
+    BEGIN                                                               01113000          
+                                                                        01114000          
+      aapi := getRemoteUser (tId, scratch2);                            01115000          
+      showResult (7"getRemoteUser");                                    01116000          
+      IF aapi = aapi_Successful                                         01117000          
+      THEN                                                              01118000          
+        showParm (7"RemoteUser",                                        01119000          
+                  scratch2 FOR maxPath UNTIL = 47"00");                 01120000          
+    END OF do_getRemoteUser;                                            01121000          
+                                                                        01122000          
+              %-----------------                                        01123000          
+    PROCEDURE  do_getRequestInfo;                                       01124000          
+              %-----------------                                        01125000          
+    BEGIN                                                               01126000          
+      INTEGER HeaderLength,                                             01127000          
+              PathLength,                                               01128000          
+              requestLineLength,                                        01129000          
+              URILength,                                                01130000          
+              QueryLength;                                              01131000          
+                                                                        01132000          
+      aapi := getRequestInfo                                            01133000          
+                (tId, requestLineLength, HeaderLength, URILength,       01134000          
+                      PathLength,        QueryLength             );     01135000          
+      showResult (7"getRequestInfo");                                   01136000          
+      IF aapi = aapi_Successful                                         01137000          
+      THEN                                                              01138000          
+        BEGIN                                                           01139000          
+          showParm(7"RequestLineLength",                                01140000          
+                   STRING7(RequestLineLength, *));                      01141000          
+          showParm(7"HeaderLength",                                     01142000          
+                   STRING7(HeaderLength, *));                           01143000          
+          showParm(7"URILength",                                        01144000          
+                   STRING7(URILength, *));                              01145000          
+          showParm(7"PathLength",                                       01146000          
+                   STRING7(PathLength, *));                             01147000          
+          showParm(7"QueryLength",                                      01148000          
+                   STRING7(QueryLength, *));                            01149000          
+        END;                                                            01150000          
+    END OF do_getRequestInfo;                                           01151000          
+                                                                        01152000          
+              %-----------------                                        01153000          
+    PROCEDURE  do_getRequestLine;                                       01154000          
+              %-----------------                                        01155000          
+    BEGIN                                                               01156000          
+                                                                        01157000          
+      aapi := getRequestLine (tId, scratch2);                           01158000          
+      showResult (7"getRequestLine");                                   01159000          
+      IF aapi = aapi_Successful                                         01160000          
+      THEN                                                              01161000          
+        showParm (7"RequestLine", scratch2 FOR maxPath UNTIL = 47"00"); 01162000          
+    END OF do_getRequestLine;                                           01163000          
+                                                                        01164000          
+              %-----------------                                        01165000          
+    PROCEDURE  do_getRequestPath;                                       01166000          
+              %-----------------                                        01167000          
+    BEGIN                                                               01168000          
+                                                                        01169000          
+      aapi := getRequestPath (tId, scratch2);                           01170000          
+      showResult (7"getRequestPath");                                   01171000          
+      IF aapi = aapi_Successful                                         01172000          
+      THEN                                                              01173000          
+        showParm (7"RequestPath", scratch2 FOR maxPath UNTIL = 47"00"); 01174000          
+    END OF do_getRequestPath;                                           01175000          
+                                                                        01176000          
+              %----------------                                         01177000          
+    PROCEDURE  do_getRequestURI;                                        01178000          
+              %----------------                                         01179000          
+    BEGIN                                                               01180000          
+                                                                        01181000          
+      aapi := getRequestURI (tId, scratch2);                            01182000          
+      showResult (7"getRequestURI");                                    01183000          
+      IF aapi = aapi_Successful                                         01184000          
+      THEN                                                              01185000          
+        showParm (7"RequestURI", scratch2 FOR maxPath UNTIL = 47"00");  01186000          
+    END OF do_getRequestURI;                                            01187000          
+                                                                        01188000          
+              %----------------                                         01189000          
+    PROCEDURE  do_getServerName;                                        01190000          
+              %----------------                                         01191000          
+    BEGIN                                                               01192000          
+                                                                        01193000          
+      aapi := getServerName (tId, scratch2);                            01194000          
+      showResult (7"getServerName");                                    01195000          
+      IF aapi = aapi_Successful                                         01196000          
+      THEN                                                              01197000          
+        showParm (7"ServerName",                                        01198000          
+                  scratch2 FOR maxPath UNTIL = 47"00");                 01199000          
+    END OF do_getServerName;                                            01200000          
+                                                                        01201000          
+              %----------------                                         01202000          
+    PROCEDURE  do_getServerPort;                                        01203000          
+              %----------------                                         01204000          
+    BEGIN                                                               01205000          
+      INTEGER ServerPort;                                               01206000          
+                                                                        01207000          
+      aapi := getServerPort (tId, ServerPort);                          01208000          
+      showResult (7"getServerPort");                                    01209000          
+      IF aapi = aapi_Successful                                         01210000          
+      THEN                                                              01211000          
+        showParm (7"ServerPort",                                        01212000          
+                  STRING7(ServerPort, *));                              01213000          
+    END OF do_getServerPort;                                            01214000          
+                                                                        01215000          
+              %----------------                                         01216000          
+    PROCEDURE  do_getTotalBytes;                                        01217000          
+              %----------------                                         01218000          
+    BEGIN                                                               01219000          
+      INTEGER TotalBytes;                                               01220000          
+                                                                        01221000          
+      aapi := getTotalBytes (tId, TotalBytes);                          01222000          
+      showResult (7"getTotalBytes");                                    01223000          
+      IF aapi = aapi_Successful                                         01224000          
+      THEN                                                              01225000          
+        showParm (7"TotalBytes", STRING7(TotalBytes,*));                01226000          
+    END OF do_getTotalBytes;                                            01227000          
+                                                                        01228000          
+              %----------                                               01229000          
+    PROCEDURE  do_initRsp;                                              01230000          
+              %----------                                               01231000          
+    BEGIN                                                               01232000          
+      aapi := initRsp (tId, 0);                                         01233000          
+      showResult(7"initRsp");                                           01234000          
+    END OF do_initRsp;                                                  01235000          
+                                                                        01236000          
+              %-----------                                              01237000          
+    PROCEDURE  do_isSecure;                                             01238000          
+              %-----------                                              01239000          
+    BEGIN                                                               01240000          
+                                                                        01241000          
+      aapi := isSecure (tId);                                           01242000          
+      showResult (7"isSecure");                                         01243000          
+    END OF do_isSecure;                                                 01244000          
+                                                                        01245000          
+              %-----------------                                        01246000          
+    PROCEDURE  do_setContentType;                                       01247000          
+              %-----------------                                        01248000          
+    BEGIN                                                               01249000          
+      aapi := setContentType (tId, textHtml);                           01250000          
+      showResult (7"setContentType");                                   01251000          
+      showParm (7"Content-Type",                                        01252000          
+                textHtml FOR maxPath UNTIL = 47"00");                   01253000          
+    END OF do_setContentType;                                           01254000          
+                                                                        01255000          
+              %------------                                             01256000          
+    PROCEDURE  do_setHeader;                                            01257000          
+              %------------                                             01258000          
+       % This is one example of a header being set in the response.     01259000          
+       % Other headers may be set in the response.                      01260000          
+    BEGIN                                                               01261000          
+      aapi := setHeader (tId, dateHdr, currDate);                       01262000          
+      showResult (7"SetHeader");                                        01263000          
+                                                                        01264000          
+      showParm (7"HeaderName",                                          01265000          
+                dateHdr FOR maxPath until = 47"00");                    01266000          
+      showParm (7"HeaderValue",                                         01267000          
+                currDate FOR maxPath UNTIL = 47"00");                   01268000          
+    END OF do_setHeader;                                                01269000          
+                                                                        01270000          
+              %----------------                                         01271000          
+    PROCEDURE  do_setStatusCode;                                        01272000          
+              %----------------                                         01273000          
+    BEGIN                                                               01274000          
+      aapi := setStatusCode (tId, 200, nullString);                     01275000          
+      showResult (7"setStatusCode");                                    01276000          
+      showParm (7"StatusCode",                                          01277000          
+                STRING7(200, *));                                       01278000          
+    END OF do_setStatusCode;                                            01279000          
+                                                                        01280000          
+              %---------------                                          01281000          
+    PROCEDURE  do_utAuthorized;                                         01282000          
+              %---------------                                          01283000          
+    BEGIN                                                               01284000          
+      aapi := utAuthorized (tId);                                       01285000          
+      showResult (7"utAuthorized");                                     01286000          
+    END OF do_utAuthorized;                                             01287000          
+                                                                        01288000          
+              %--------------                                           01289000          
+    PROCEDURE  do_utDateToInt;                                          01290000          
+              %--------------                                           01291000          
+    BEGIN                                                               01292000          
+      aapi := utDateToInt (currDate, currIntDate);                      01293000          
+      showResult (7"utDateToInt");                                      01294000          
+      showParm (7"Date",                                                01295000          
+                currDate FOR maxPath UNTIL = 47"00");                   01296000          
+      IF aapi = aapi_successful                                         01297000          
+      THEN                                                              01298000          
+        showParm (7"INTEGER",                                           01299000          
+                  STRING7(currIntDate, *));                             01300000          
+    END OF do_utDateToInt;                                              01301000          
+                                                                        01302000          
+              %----------------                                         01303000          
+    PROCEDURE  do_utIntToTime57;                                        01304000          
+              %----------------                                         01305000          
+    BEGIN                                                               01306000          
+      aapi := utIntToTime57 (currIntDate, realWord[0]);                 01307000          
+      showResult (7"utIntToTime57");                                    01308000          
+      showParm (7"INTEGER",                                             01309000          
+                STRING7(currIntDate, *));                               01310000          
+      IF aapi = aapi_successful                                         01311000          
+      THEN                                                              01312000          
+        showParm (7"Time(57)",                                          01313000          
+                  hexWord[0] FOR 12 WITH HEXTOASCII);                   01314000          
+    END OF do_utIntToTime57;                                            01315000          
+                                                                        01316000          
+              %-----------------                                        01317000          
+    PROCEDURE  do_utParseHeaders;                                       01318000          
+              %-----------------                                        01319000          
+    BEGIN                                                               01320000          
+      POINTER p;                                                        01321000          
+                                                                        01322000          
+      p    := scratch2 [0];                                             01323000          
+      aapi := utParseHeaders (tId, p, names, values);                   01324000          
+      showResult (7"utParseHeaders");                                   01325000          
+      IF aapi = aapi_Successful                                         01326000          
+      THEN                                                              01327000          
+        parseReport (scratch2, names, values);                          01328000          
+    END OF do_utParseHeaders;                                           01329000          
+                                                                        01330000          
+              %---------------------                                    01331000          
+    PROCEDURE  do_utParseQueryString;                                   01332000          
+              %---------------------                                    01333000          
+    BEGIN                                                               01334000          
+      POINTER p;                                                        01335000          
+                                                                        01336000          
+      p    := scratch2 [0];                                             01337000          
+      aapi := utParseQueryString (tId, p, names, values);               01338000          
+      showResult (7"utParseQueryString");                               01339000          
+      IF aapi = aapi_Successful                                         01340000          
+      THEN                                                              01341000          
+         parseReport (scratch2, names, values);                         01342000          
+    END OF do_utParseQueryString;                                       01343000          
+                                                                        01344000          
+              %------------------                                       01345000          
+    PROCEDURE  do_utParsePostData;                                      01346000          
+              %------------------                                       01347000          
+    BEGIN                                                               01348000          
+      POINTER p;                                                        01349000          
+                                                                        01350000          
+      p    := scratch2 [0];                                             01351000          
+      aapi := utParsePostData (tId, p, names, values);                  01352000          
+      showResult (7"utParsePostData");                                  01353000          
+      IF aapi = aapi_Successful                                         01354000          
+      THEN                                                              01355000          
+        parseReport (scratch2, names, values);                          01356000          
+    END OF do_utParsePostData;                                          01357000          
+                                                                        01358000          
+              %-----------------                                        01359000          
+    PROCEDURE  do_utTime57ToDate;                                       01360000          
+              %-----------------                                        01361000          
+    BEGIN                                                               01362000          
+      realWord [0] := time(57);                                         01363000          
+      aapi         := utTime57ToDate (realWord[0], currDate);           01364000          
+      showResult (7"utTime57ToDate");                                   01365000          
+      showParm (7"Time(57)",                                            01366000          
+                hexWord[0] FOR 12 WITH HEXTOASCII);                     01367000          
+      IF aapi = aapi_successful                                         01368000          
+      THEN                                                              01369000          
+        showParm (7"Date",                                              01370000          
+                  currDate FOR maxPath UNTIL = 47"00");                 01371000          
+    END OF do_utTime57ToDate;                                           01372000          
+                                                                        01373000          
+              %-------------                                            01374000          
+    PROCEDURE  do_utUserIsPu;                                           01375000          
+              %-------------                                            01376000          
+    BEGIN                                                               01377000          
+      aapi := utUserIsPu (tId);                                         01378000          
+      showResult (7"utUserIsPu");                                       01379000          
+    END OF do_utUserIsPu;                                               01380000          
+                                                                        01381000          
+%-------------------- Begin processEnvironment -------------------------01382000          
+                                                                        01383000          
+    realWord [0] := tId;                                                01384000          
+    REPLACE pRsp:rsp BY html_head,                                      01385000          
+        7"<H2><B>API results for transaction ",                         01386000          
+        hexWord[0] FOR 12 WITH HEXTOASCII,                              01387000          
+        7"</B></H2><P>";                                                01388000          
+    do_getRequestInfo;                                                  01389000          
+    do_utAuthorized;                                                    01390000          
+    do_utUserIsPu;                                                      01391000          
+    do_isSecure;                                                        01392000          
+    do_getTotalBytes;                                                   01393000          
+    do_getContentLength;                                                01394000          
+    do_getRequestLine;                                                  01395000          
+    do_getMethod;                                                       01396000          
+    do_getRequestURI;                                                   01397000          
+    do_getRequestPath;                                                  01398000          
+    do_getApplicationPath;                                              01399000          
+    do_getPathInfo;                                                     01400000          
+    do_getPathTranslated;                                               01401000          
+    do_getRealPath;                                                     01402000          
+    do_getProtocol;                                                     01403000          
+    do_getQueryString;                                                  01404000          
+    do_utParseQueryString;                                              01405000          
+    do_getContentType;                                                  01406000          
+    do_getAuthType;                                                     01407000          
+    do_getRemoteUser;                                                   01408000          
+    do_getServerName;                                                   01409000          
+    do_getServerPort;                                                   01410000          
+    do_getRemoteAddr;                                                   01411000          
+    do_getRemoteAddrWord;                                               01412000          
+    do_getRemoteHost;                                                   01413000          
+    do_getRemotePort;                                                   01414000          
+    do_getHeader;                                                       01415000          
+    do_getIntHeader;                                                    01416000          
+    do_utParseHeaders;                                                  01417000          
+    do_getPostedData;                                                   01418000          
+    do_utParsePostData;                                                 01419000          
+    do_getMimeType;                                                     01420000          
+    do_utTime57ToDate;                                                  01421000          
+    do_utDateToInt;                                                     01422000          
+    do_utIntToTime57;                                                   01423000          
+    do_getProviderInfo;                                                 01424000          
+                                                                        01425000          
+%  -- now setup and send response --                                    01426000          
+                                                                        01427000          
+    do_initRsp;                                                         01428000          
+    do_setStatusCode;                                                   01429000          
+    do_setContentType;                                                  01430000          
+    do_setHeader;                                                       01431000          
+                                                                        01432000          
+    REPLACE pRsp:pRsp BY html_tail;                                     01433000          
+    setContentLength (tId, OFFSET(pRsp));                               01434000          
+    sendContent      (tId, rsp, OFFSET(pRsp), lenSent);                 01435000          
+    finish           (tId);                                             01436000          
+  END OF processEnvironment;                                            01437000          
+                                                                        01438000          
+            %----------------                                           01439000          
+  PROCEDURE  processSendAsync  (tId);                                   01440000          
+            %----------------                                           01441000          
+     VALUE                      tId;                                    01442000          
+     REAL                       tId;                                    01443000          
+  BEGIN                                                                 01444000          
+    INTEGER aapi;                                                       01445000          
+    EBCDIC ARRAY  ea   [0:10];                                          01446000          
+    INTEGER newTrans;                                                   01447000          
+    INTEGER numLen;                                                     01448000          
+    POINTER p;                                                          01449000          
+                                                                        01450000          
+    getAvailTrans (newTrans);                                           01451000          
+    offsets [newTrans] := 0;                                            01452000          
+    aapi := getPathInfo (tId, scratch2);                                01453000          
+    IF aapi = aapi_Successful                                           01454000          
+    THEN  % see if number, then it is the size of the message to send   01455000          
+       BEGIN                                                            01456000          
+          SCAN p:scratch2 [0]  FOR SIZE (scratch2)  UNTIL = 48"00";     01457000          
+          numLen := OFFSET (p) - 1;                                     01458000          
+          REPLACE ea [0]  BY  scratch2 [1]  FOR numLen  WITH A2E;       01459000          
+          TRY BEGIN                                                     01460000          
+             lenToSend [newTrans] := DECIMAL (STRING(ea [0],numLen));   01461000          
+             lenToSend [newTrans]                                       01462000          
+                           := MIN (lenToSend [newTrans], maxLenToSend); 01463000          
+              END                                                       01464000          
+          ELSE  % fault                                                 01465000          
+             % ignore, not a valid number                               01466000          
+             lenToSend [newTrans] := maxLenToSend;                      01467000          
+       END   % see if number                                            01468000          
+    ELSE  % send max                                                    01469000          
+       lenToSend [newTrans] := maxLenToSend;                            01470000          
+    initRsp          (tId, newTrans);                                   01471000          
+    setStatusCode    (tId, 200, nullString);                            01472000          
+    setContentLength (tId, lenToSend [newTrans]);                       01473000          
+    setContentType   (tId, textPlain);                                  01474000          
+                                                                        01475000          
+    do_SendAsync (tId, newTrans);                                       01476000          
+  END OF processSendAsync;                                              01477000          
+                                                                        01478000          
+            %-----------                                                01479000          
+  PROCEDURE  processSend  (tId);                                        01480000          
+            %-----------                                                01481000          
+     VALUE                 tId;                                         01482000          
+     REAL                  tId;                                         01483000          
+  BEGIN                                                                 01484000          
+    INTEGER lenSent;                                                    01485000          
+                                                                        01486000          
+    initRsp          (tId, 0);                                          01487000          
+    setStatusCode    (tId, 200, nullString);                            01488000          
+    setContentLength (tId, maxLenToSend);                               01489000          
+    setContentType   (tId, textPlain);                                  01490000          
+                                                                        01491000          
+    sendContent (tId, dataToSend, maxLenToSend, lenSent);               01492000          
+    finish (tId);                                                       01493000          
+  END OF processSend;                                                   01494000          
+                                                                        01495000          
+            %------                                                     01496000          
+  PROCEDURE  resend;                                                    01497000          
+            %------                                                     01498000          
+     % Atlas has signaled that it is possible to send more data         01499000          
+     % from an incomplete transaction.  Try to send the remainder.      01500000          
+  BEGIN                                                                 01501000          
+    REAL outTrans, outId;                                               01502000          
+                                                                        01503000          
+    IF postOutEvt (outId, outTrans) = aapi_successful                   01504000          
+    THEN                                                                01505000          
+      do_SendAsync (outId, outTrans);                                   01506000          
+  END OF resend;                                                        01507000          
+                                                                        01508000          
+            %-------------                                              01509000          
+  PROCEDURE  rejectRequest  (tId);                                      01510000          
+            %-------------                                              01511000          
+     VALUE                   tId;                                       01512000          
+     REAL                    tId;                                       01513000          
+  BEGIN                                                                 01514000          
+    initRsp       (tId, 0);                                             01515000          
+    setStatusCode (tId, 400, nullString);       % default status code   01516000          
+    sendError     (tId, ErrorMsg, ErrorMsgLen);                         01517000          
+    sendError (tId, ErrorMsg, ErrorMsgLen);                             01518000          
+    finish    (tId);                                                    01519000          
+  END OF rejectRequest;                                                 01520000          
+                                                                        01521000          
+                                                                        01522000          
+            %-------------------                                        01523000          
+  PROCEDURE  processNoContentLen (tId);                                 01524000          
+            %-------------------                                        01525000          
+     VALUE                        tId;                                  01526000          
+     REAL                         tId;                                  01527000          
+    %  Send a response without setting Content-Length header.           01528000          
+    %  Atlas will send the data, then close the connection.             01529000          
+  BEGIN                                                                 01530000          
+      POINTER pRsp;                                                     01531000          
+      INTEGER lenSent;                                                  01532000          
+                                                                        01533000          
+    REPLACE pRsp:rsp BY html_head,                                      01534000          
+        7"<H2>No Content-Len test, Server requests close (?)</H2>",     01535000          
+        html_tail;                                                      01536000          
+                                                                        01537000          
+    initRsp       (tId, 0);                                             01538000          
+    setStatusCode (tId, 200, nullString);                               01539000          
+    sendContent   (tId, rsp, OFFSET(pRsp), lenSent);                    01540000          
+    finish        (tId);                                                01541000          
+  END OF PROCEDURE processNoContentLen;                                 01542000          
+                                                                        01543000          
+                                                                        01544000          
+            %-----------                                                01545000          
+  PROCEDURE  processHang  (tId);                                        01546000          
+            %-----------                                                01547000          
+     VALUE                 tId;                                         01548000          
+     REAL                  tId;                                         01549000          
+  BEGIN                                                                 01550000          
+      EBCDIC ARRAY  EA [0:100];                                         01551000          
+    REPLACE EA [0]  BY  "Waiting for Operator OK/DS",  48"00";          01552000          
+    ACCEPT (EA);                                                        01553000          
+    initRsp       (tId, 0);                                             01554000          
+    setStatusCode (tId, 200, nullString);                               01555000          
+    sendError     (tId, AcceptMsg, AcceptMsgLen);                       01556000          
+    finish        (tId);                                                01557000          
+  END OF PROCEDURE processHang;                                         01558000          
+                                                                        01558010SUDOKU    
+  PROCEDURE  processNewForm  (tId);                                     01558020SUDOKU    
+            %--------------                                             01558030SUDOKU    
+     VALUE                tId;                                          01558040SUDOKU    
+     REAL                 tId;                                          01558050SUDOKU    
+    %  Parse out and display the environment variables.                 01558060SUDOKU    
+  BEGIN                                                                 01558070SUDOKU    
+    POINTER pRsp;                                                       01558080SUDOKU    
+    INTEGER lenSent;                                                    01558090SUDOKU    
+    INTEGER aapi, iTr;                                                  01558100SUDOKU    
+                                                                        01558110SUDOKU    
+    PROCEDURE insertTr(iTr);                                            01558120SUDOKU    
+      VALUE            iTr;                                             01558130SUDOKU    
+      INTEGER          iTr;                                             01558135SUDOKU    
+      BEGIN                                                             01558140SUDOKU    
+      INTEGER iTd;                                                      01558150SUDOKU    
+                                                                        01558160SUDOKU    
+      PROCEDURE insertTd(iTr, iTd);                                     01558170SUDOKU    
+        VALUE            iTr, iTd;                                      01558180SUDOKU    
+        INTEGER          iTr, iTd;                                      01558190SUDOKU    
+        BEGIN                                                           01558200SUDOKU    
+        INTEGER iTab;                                                   01558210SUDOKU    
+                                                                        01558220SUDOKU    
+        PROCEDURE insertTable(iTr, iTd, iTab);                          01558230SUDOKU    
+          VALUE               iTr, iTd, iTab;                           01558240SUDOKU    
+          INTEGER             iTr, iTd, iTab;                           01558250SUDOKU    
+          BEGIN                                                         01558260SUDOKU    
+          INTEGER jTr;                                                  01558270SUDOKU    
+                                                                        01558280SUDOKU    
+          PROCEDURE insertInnerTr(iTr, iTd, jTr);                       01558290SUDOKU    
+            VALUE                 iTr, iTd, jTr;                        01558300SUDOKU    
+            INTEGER               iTr, iTd, jTr;                        01558310SUDOKU    
+            BEGIN                                                       01558320SUDOKU    
+            INTEGER jTd;                                                01558330SUDOKU    
+                                                                        01558340SUDOKU    
+            PROCEDURE insertInnerTd (iTr, iTd, jTr, jTd);               01558350SUDOKU    
+              VALUE                  iTr, iTd, jTr, jTd;                01558360SUDOKU    
+              INTEGER                iTr, iTd, jTr, jTd;                01558370SUDOKU    
+              BEGIN                                                     01558380SUDOKU    
+                                                                        01558390SUDOKU    
+              REPLACE pRsp:pRsp                                         01558400SUDOKU    
+                   BY 7"<td><input type="7""text"7"" name="7""",        01558410SUDOKU    
+                      STRING7(jTr+(iTr-1)*3,1),                         01558420SUDOKU    
+                      STRING7(jTd+(iTd-1)*3,1),                         01558430SUDOKU    
+                      7"" size="7""1"7"" maxlength="7""1"7"" value="    01558440SUDOKU    
+                      7"" "7"" />"7"</td>",aCrLf;                       01558450SUDOKU    
+              END of insertInnerTd;                                     01558460SUDOKU    
+                                                                        01558470SUDOKU    
+            REPLACE pRsp:pRsp BY 7"<tr>",aCrLf;                         01558480SUDOKU    
+            THRU 3 DO                                                   01558490SUDOKU    
+              insertInnerTd(iTr, iTd, jTr, jTd:=*+1);                   01558500SUDOKU    
+            REPLACE pRsp:pRsp BY 7"</tr>",aCrLf;                        01558510SUDOKU    
+            END of insertInnerTr;                                       01558520SUDOKU    
+                                                                        01558530SUDOKU    
+          REPLACE pRsp:pRsp BY 7"<table border="7""1"7"">",aCrLf;       01558540SUDOKU    
+          THRU 3 DO                                                     01558550SUDOKU    
+            insertInnerTr(iTr, iTd, jTr:=*+1);                          01558560SUDOKU    
+          REPLACE pRsp:pRsp BY 7"</table>",aCrLf;                       01558570SUDOKU    
+          END of insertTable;                                           01558580SUDOKU    
+                                                                        01558590SUDOKU    
+        REPLACE pRsp:pRsp BY 7"<td>",aCrLf;                             01558600SUDOKU    
+%       THRU 3 DO                                                       01558610SUDOKU    
+          insertTable(iTr, iTd, iTab:=*+1);                             01558620SUDOKU    
+        REPLACE pRsp:pRsp BY 7"</td>",aCrLf;                            01558630SUDOKU    
+        END of insertTd;                                                01558640SUDOKU    
+                                                                        01558650SUDOKU    
+      REPLACE pRsp:pRsp BY 7"<tr>",aCrLf;                               01558660SUDOKU    
+      THRU 3 DO                                                         01558670SUDOKU    
+        insertTd(iTr, iTd:=*+1);                                        01558680SUDOKU    
+      REPLACE pRsp:pRsp BY 7"</tr>",aCrLf;                              01558690SUDOKU    
+      END of insertTr;                                                  01558700SUDOKU    
+                                                                        01558710SUDOKU    
+    REPLACE pRsp:rsp                                                    01558720SUDOKU    
+         BY html_head,                                                  01558730SUDOKU    
+            7"<form action="7""getSudoku"7"" method="7""get"7"" >",     01558740SUDOKU    
+            aCrLf,                                                      01558750SUDOKU    
+            7"<table border="7""0"7"">",aCrLf;                          01558760SUDOKU    
+                                                                        01558770SUDOKU    
+    THRU 3 DO                                                           01558780SUDOKU    
+      insertTr(iTr:=*+1);                                               01558790SUDOKU    
+                                                                        01558800SUDOKU    
+    REPLACE pRsp:pRsp                                                   01558810SUDOKU    
+         BY 7"</table>",aCrLf,                                          01558820SUDOKU    
+            7"<input type="7""submit"7"" value="7""EVAL"7"" />",aCrLf,  01558830SUDOKU    
+            7"</form>",aCrLf,                                           01558840SUDOKU    
+            html_tail;                                                  01558850SUDOKU    
+                                                                        01558860SUDOKU    
+    initRsp          (tId, 0);                                          01558870SUDOKU    
+    setContentLength (tId, OFFSET(pRsp));                               01558880SUDOKU    
+    sendContent      (tId, rsp, OFFSET(pRsp), lenSent);                 01558890SUDOKU    
+    finish           (tId);                                             01558900SUDOKU    
+  END of processNewForm;                                                01558910SUDOKU    
+                                                                        01559000          
+            %-----------------                                          01560000          
+  PROCEDURE  processNewRequest;                                         01561000          
+            %-----------------                                          01562000          
+  BEGIN                                                                 01563000          
+    INTEGER lLeft;                                                      01564000          
+    REAL    newId;                                                      01565000          
+    POINTER p;                                                          01566000          
+                                                                        01567000          
+    IF CAND(postNewReq         (newId)           = aapi_successful,     01568000          
+            getApplicationPath (newId, scratch1) = aapi_successful )    01569000          
+    THEN                                                                01570000          
+    BEGIN  % got new request                                            01571000          
+      % first char at scratch1[0] must be a "/"                         01572000          
+      % Look for node following next "/"                                01573000          
+      SCAN p:scratch1[1] FOR maxPath UNTIL IN aEndOfNode;               01574000          
+      p := * + 1;                                                       01575000          
+      SCAN p FOR lLeft:maxPath UNTIL IN aEndOfNode;                     01576000          
+      REPLACE p BY p FOR (maxPath-lLeft) WITH AL2U, 7"." FOR 1;         01577000          
+      IF p = 7"APIENV."                                                 01578000          
+      THEN                                                              01579000          
+        processEnvironment (newId)                                      01580000          
+      ELSE                                                              01581000          
+      IF p = 7"SEND."                                                   01582000          
+      THEN                                                              01583000          
+        processSend (newId)                                             01584000          
+      ELSE                                                              01585000          
+      IF p = 7"SENDASYNC."                                              01586000          
+      THEN                                                              01587000          
+        processSendAsync (newId)                                        01588000          
+      ELSE                                                              01589000          
+      IF p = 7"HANG."                                                   01590000          
+      THEN                                                              01591000          
+        processHang (newId)                                             01592000          
+      ELSE                                                              01593000          
+      IF p = 7"NOCONTENTLEN."                                           01594000          
+      THEN                                                              01595000          
+        processNoContentLen (newId)                                     01596000          
+      ELSE                                                              01596100SUDOKU    
+      IF p = 7"NEW."                                                    01596200SUDOKU    
+      THEN                                                              01596400SUDOKU    
+        processNewForm (newId)                                          01596600SUDOKU    
+      ELSE  % extra path not recognized                                 01597000          
+        rejectRequest (newId);                                          01598000          
+    END;  % got new request                                             01599000          
+  END OF processNewRequest;                                             01600000          
+                                                                        01601000          
+%------------------------- Begin Main Loop -----------------------------01602000          
+                                                                        01603000          
+  hexWord := realWord;                                                  01604000          
+                                                                        01605000          
+  DO                                                                    01606000          
+  BEGIN                                                                 01607000          
+    CASE WAIT (libEojEvent, newReqEvt, outEvt) OF                       01608000          
+    BEGIN                                                               01609000          
+      1: stopRunning := TRUE;                                           01610000          
+      2: processNewRequest;                                             01611000          
+      3: resend;                                                        01612000          
+    END;  % case wait                                                   01613000          
+  END UNTIL stopRunning;                                                01614000          
+                                                                        01615000          
+END OF mainloop;                                                        01616000          
+                                                                        01617000          
+END; % TYPE CONNECTION BLOCK httpApiType                                01618000          
+                                                                        01619000          
+                                                                        01620000          
+                                                                        01621000          
+                                                                        01622000          
+               %---------------                                         01623000          
+REAL PROCEDURE  httpApiApproval  (OWNER, LIBPAR, LEN, WAIT);            01624000          
+               %---------------                                         01625000          
+   VALUE                                         LEN, WAIT;             01626000          
+   TASK                           OWNER;                                01627000          
+   EBCDIC ARRAY                          LIBPAR [*];                    01628000          
+   INTEGER                                       LEN;                   01629000          
+   BOOLEAN                                            WAIT;             01630000          
+BEGIN                                                                   01631000          
+  % Insert code here as necessary to handle linkage attempt             01632000          
+                                                                        01633000          
+END OF httpApiApproval;                                                 01634000          
+                                                                        01635000          
+                                                                        01636000          
+ASCII VALUE ARRAY APIDEMO (7"SUDOKU" 47"00");                           01637000SUDOKU    
+                                                                        01638000          
+% Omit SINGLE if application can communicate with multiple server       01639000          
+% copies.  The specific FUNCTIONNAME for each server will be used in    01640000          
+% each subsequent LINKLIBRARY call.                                     01641000          
+                                                                        01642000          
+httpApiType SINGLE LIBRARY httpApiLib                                   01643000          
+   (LIBACCESS     = BYINITIATOR,                                        01644000          
+  % FUNCTIONNAME  = "ATLASADMIN.",                                      01645000          
+    INTERFACENAME = "HTTPAPI.",    % required                           01646000          
+    CHANGE        = httpApiChange);                                     01647000          
+    %APPROVAL      = httpApiApproval);                                  01648000          
+                                                                        01649000          
+                                                                        01650000          
+          %--------                                                     01651000          
+PROCEDURE  initData;                                                    01652000          
+          %--------                                                     01653000          
+   % Build up the large data response used by the "processSend" and     01654000          
+   %  "processSendAsync" procedures.                                    01655000          
+BEGIN                                                                   01656000          
+  DEFINE                                                                01657000          
+    numDigits  = 10 #,                                                  01658000          
+    numPerLine = 10 #;                                                  01659000          
+  INTEGER i,  max_i;                                                    01660000          
+  POINTER p;                                                            01661000          
+  EBCDIC ARRAY NUM_BUFF [0 : numDigits*numPerLine];                     01662000          
+                                                                        01663000          
+  p     := dataToSend;                                                  01664000          
+  max_i := maxLenToSend DIV numDigits;                                  01665000          
+  THRU numPerLine                                                       01666000          
+  DO  % load repeated buffer                                            01667000          
+    BEGIN                                                               01668000          
+      i := * + 1;                                                       01669000          
+      REPLACE NUM_BUFF [(i-1)*numDigits] BY STRING7(i, numDigits);      01670000          
+    END;                                                                01671000          
+  FOR i := 1 STEP numPerLine UNTIL max_i                                01672000          
+  DO                                                                    01673000          
+    REPLACE p:p BY  STRING7 (i, numDigits),                             01674000          
+             NUM_BUFF [numDigits] FOR (numPerLine-1)*numDigits - 1,     01675000          
+             47"0A";                                                    01676000          
+$$ SET OMIT                                                             01677000          
+  p := dataToSend;                                                      01678000          
+  DO                                                                    01679000          
+    BEGIN                                                               01680000          
+      THRU numPerLine-1                                                 01681000          
+      DO                                                                01682000          
+        BEGIN                                                           01683000          
+          i := * + 1;                                                   01684000          
+          REPLACE p:p BY STRING7(i, numDigits);                         01685000          
+        END;                                                            01686000          
+      i := * + 1;                                                       01687000          
+      REPLACE p:p BY STRING7(i DIV numPerLine, numDigits-1),  47"0A";   01688000          
+    END                                                                 01689000          
+  UNTIL i GEQ (maxLenToSend DIV numDigits);                             01690000          
+$$ POP OMIT                                                             01691000          
+                                                                        01692000          
+  FOR i := maxTrans STEP -1 UNTIL 1                                     01693000          
+  DO                                                                    01694000          
+    putAvailTrans (i);                                                  01695000          
+END OF initData;                                                        01696000          
+                                                                        01697000          
+                                                                        01698000          
+%----------------------------------------------------------------------%01699000          
+%                                                                      %01700000          
+%                             Outer Block                              %01701000          
+%                                                                      %01702000          
+%----------------------------------------------------------------------%01703000          
+                                                                        01704000          
+                                                                        01705000          
+% retrieve and display version information                              01706000          
+                                                                        01707000          
+CompiledVersion:= ( COMPILETIME (20) *  1000 +                          01708000          
+                    COMPILETIME (21) * 10000 +                          01709000          
+                    COMPILETIME (22)          );                        01710000          
+CompiledWhen := COMPILETIME (7);                                        01711000          
+                                                                        01712000          
+REPLACE CompiledDisplay BY                                              01713000          
+   "APIDEMO Version ",                                                  01714000          
+   Compiletime(20) FOR 2 digits, ".",                                   01715000          
+   Compiletime(21) FOR 3 digits, ".",                                   01716000          
+   Compiletime(22) FOR 4 digits, " ",                                   01717000          
+   "compiled ",                                                         01718000          
+   CompiledWhen.T7Monthf  FOR * digits, "/",                            01719000          
+   CompiledWhen.T7Dayf    FOR * digits, "/",                            01720000          
+   CompiledWhen.T7Yearf   FOR * digits, " @ ",                          01721000          
+   CompiledWhen.T7Hourf   FOR 2 digits, ":",                            01722000          
+   CompiledWhen.T7Minutef FOR 2 digits, null;                           01723000          
+DISPLAY (CompiledDisplay[0]);                                           01724000          
+                                                                        01725000          
+IF BOOLEAN (MYSELF.LIBRARYSTATE)                                        01726000          
+THEN  % brought up by library touch                                     01727000          
+  BEGIN  % init as library                                              01728000          
+     INTEGER libRslt;                                                   01729000          
+                                                                        01730000          
+    libRslt := READYCL (httpApiLib);                                    01731000          
+    WAIT ((2), libLinkedEvent);                                         01732000          
+  END;                                                                  01733000          
+                                                                        01734000          
+IF NOT HAPPENED (libLinkedEvent)                                        01735000          
+THEN  % either failed above linkage or run as a task                    01736000          
+  BEGIN                                                                 01737000          
+    IF LINKLIBRARY (httpApiLib, DONTWAIT) > 0                           01738000          
+    THEN  % linked to atlas                                             01739000          
+       % if this LINKLIBRARY is used without a DONTWAIT option,         01740000          
+       %  this program will cause ATLAS to be initiated if ATLAS        01741000          
+       %  is not running.                                               01742000          
+       % if this code should wait for ATLAS to be initiated,            01743000          
+       %  then it should loop periodically with DONTWAIT until          01744000          
+       %  linked ok.                                                    01745000          
+      BEGIN                                                             01746000          
+        IF httpApiLib.initAppl (APIDEMO) NEQ aapi_Successful            01747000          
+        THEN                                                            01748000          
+          RESET (libLinkedEvent);                                       01749000          
+      END;  % atlas not currently running                               01750000          
+  END;                                                                  01751000          
+                                                                        01752000          
+initData;                                                               01753000          
+                                                                        01754000          
+IF HAPPENED (libLinkedEvent)                                            01755000          
+THEN                                                                    01756000          
+  httpApiLib.mainLoop                                                   01757000          
+ELSE                                                                    01758000          
+  DISPLAY (progId  CAT  "Not Linked to Atlas");                         01759000          
+                                                                        01760000          
+                                                                        01761000          
+END of APIDEMO.                                                         01762000          
